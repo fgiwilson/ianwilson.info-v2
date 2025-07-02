@@ -66,7 +66,7 @@ export const actions: Actions = {
       try {
         await transporter.sendMail({
           from: `"${name}" <${email}>`,
-          to: 'ian@wilsonsdesigns.com', // Replace with your receiving email
+          to: 'ian@ianwilson.info', // Replace with your receiving email
           subject: `Contact Form: ${subject}`,
           text: `
             Name: ${name}
