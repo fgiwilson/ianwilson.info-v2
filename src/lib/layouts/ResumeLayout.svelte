@@ -1,7 +1,6 @@
 <script lang="ts">
   // Add default export for Svelte 5 compatibility
   export {}
-  import type { ComponentType } from 'svelte';
   
   // Props for the component
   let {
