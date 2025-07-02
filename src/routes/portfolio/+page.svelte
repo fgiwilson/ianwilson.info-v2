@@ -68,7 +68,7 @@
             <div class="h-48 overflow-hidden">
               {#if project.images && project.images.length > 0}
                 <img 
-                  src={project.images[0].path.startsWith('/') ? project.images[0].path : `/${project.images[0].path}`} 
+                  src={project.images[0].path?.startsWith('http') ? project.images[0].path : (project.images[0].path?.startsWith('/') ? project.images[0].path : `/${project.images[0].path}`)} 
                   alt={project.images[0].alt || project.title}
                   class="w-full h-full object-cover transition-transform hover:scale-105"
                 />
