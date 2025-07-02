@@ -1,5 +1,4 @@
 <script>
-  import { marked } from 'marked';
   // Get the frontmatter metadata from the markdown file using Svelte 5 runes
   let {
     title,

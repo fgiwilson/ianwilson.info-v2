@@ -72,7 +72,7 @@
     if (!images || images.length === 0) return [];
     
     return images.map(image => ({
-      url: image.path.startsWith('/') ? image.path : `/${image.path}`,
+      url: image.path.startsWith('http') ? image.path : (image.path.startsWith('/') ? image.path : `/${image.path}`),
       alt: image.alt || ''
     }));
   }
@@ -133,7 +133,8 @@
       tags={project.categories?.map(cat => cat.name) || []}
       technologies={project.technologies ? project.technologies.split(',').map(tech => tech.trim()) : []}
       coverImage={project.images && project.images.length > 0 ? 
-        (project.images[0].path.startsWith('/') ? project.images[0].path : `/${project.images[0].path}`) : 
+        (project.images[0].path.startsWith('http') ? project.images[0].path : 
+         (project.images[0].path.startsWith('/') ? project.images[0].path : `/${project.images[0].path}`)) : 
         undefined}
       gallery={createGalleryImages(project.images?.slice(1))}
       websiteUrl={project.websiteUrl || null}
