@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for admin authentication
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String?
+  password  String
+  role      String    @default("user") // Options: user, admin, editor
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     BlogPost[]
+  projects  Project[]
+  sessions  Session[]
+}
+
+// Session model for authentication
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  updatedAt DateTime @updatedAt
+}
+
+// BlogPost model for the blog system
+model BlogPost {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    String
+  tags        Tag[]
+  featured    Boolean  @default(false)
+  // Media relations
+  coverImageId String?  @unique
+  coverImage  Media?   @relation("BlogPostCover", fields: [coverImageId], references: [id])
+  images      Media[]  @relation("BlogPostImages")
+}
+
+// Project model for portfolio projects
+model Project {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  description   String
+  content       String
+  client        String?
+  completionDate DateTime?
+  technologies  String?
+  websiteUrl    String?
+  githubUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  author        User     @relation(fields: [authorId], references: [id])
+  authorId      String
+  categories    Category[]
+  featured      Boolean  @default(false)
+  images        Media[]  @relation("ProjectImages")
+  order         Int      @default(0)
+}
+
+// Media model for images and files
+model Media {
+  id          String    @id @default(uuid())
+  filename    String
+  path        String    // Path to original image
+  thumbnailPath String?  // Path to thumbnail image (small)
+  mediumPath   String?  // Path to medium-sized image
+  mimetype    String
+  size        Int
+  alt         String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  // Relations
+  blogPosts   BlogPost[] @relation("BlogPostImages")
+  projects    Project[]  @relation("ProjectImages")
+  blogPost    BlogPost?  @relation("BlogPostCover")
+}
+
+// Tag model for blog post organization
+model Tag {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  slug      String     @unique
+  blogPosts BlogPost[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// Category model for project organization
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// Resume section model (e.g., Summary, Work Experience, Education, Skills)
+model ResumeSection {
+  id          String       @id @default(uuid())
+  title       String
+  type        String       // e.g., "summary", "work", "education", "skills", "certifications"
+  content     String?      // Optional markdown content for the section (e.g., for summary)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  items       ResumeItem[] // Related items in this section
+  skills      ResumeSkill[] // Skills in this section (if type is "skills")
+}
+
+// Resume item model (e.g., a job, degree, skill, certification)
+model ResumeItem {
+  id            String        @id @default(uuid())
+  title         String        // e.g., job title, degree name
+  subtitle      String?       // e.g., company name, university name
+  location      String?       // e.g., city, country, remote
+  startDate     DateTime?
+  endDate       DateTime?
+  current       Boolean       @default(false)
+  description   String        // Markdown content
+  order         Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  section       ResumeSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId     String
+}
+
+// Resume skill model for skills with percentages and categories
+model ResumeSkill {
+  id          String        @id @default(uuid())
+  name        String
+  percentage  Int           @default(80) // Skill proficiency percentage (0-100)
+  category    String        @default("General") // e.g., "Frontend", "Backend", "DevOps"
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  section     ResumeSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId   String
+}
+
+// Resume personal info model for sidebar information
+model ResumePersonalInfo {
+  id          String        @id @default(uuid())
+  label       String
+  value       String
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// Resume stats model for statistics display
+model ResumeStat {
+  id          String        @id @default(uuid())
+  value       String        // e.g., "8+", "50+"
+  label       String        // e.g., "Years Experience", "Projects Completed"
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}

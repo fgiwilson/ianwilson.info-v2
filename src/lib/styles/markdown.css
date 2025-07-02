@@ -1,0 +1,106 @@
+/* Markdown content styling */
+.prose {
+  @apply text-text max-w-none;
+}
+
+.prose h1 {
+  @apply text-3xl font-bold text-primary mt-8 mb-4;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold text-primary mt-8 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl font-bold text-primary mt-6 mb-3;
+}
+
+.prose h4 {
+  @apply text-lg font-bold text-primary mt-6 mb-3;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.prose ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.prose li {
+  @apply mb-2;
+}
+
+.prose a {
+  @apply text-accent hover:underline;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary/30 pl-4 italic my-4;
+}
+
+.prose pre {
+  @apply bg-gray-800 text-white p-4 rounded-lg overflow-x-auto mb-4;
+}
+
+.prose code {
+  @apply bg-gray-100 text-primary px-1 py-0.5 rounded text-sm;
+}
+
+.prose pre code {
+  @apply bg-transparent text-inherit p-0 rounded-none text-base;
+}
+
+.prose img {
+  @apply rounded-lg my-6 max-w-full;
+}
+
+.prose hr {
+  @apply border-t border-gray-200 my-8;
+}
+
+.prose table {
+  @apply w-full border-collapse mb-6;
+}
+
+.prose table th {
+  @apply bg-background-alt text-primary font-bold p-2 border border-gray-200 text-left;
+}
+
+.prose table td {
+  @apply p-2 border border-gray-200;
+}
+
+/* Code highlighting */
+.prose .hljs-comment,
+.prose .hljs-quote {
+  @apply text-gray-400;
+}
+
+.prose .hljs-keyword,
+.prose .hljs-selector-tag {
+  @apply text-purple-400;
+}
+
+.prose .hljs-string,
+.prose .hljs-template-tag {
+  @apply text-green-400;
+}
+
+.prose .hljs-number,
+.prose .hljs-literal {
+  @apply text-blue-400;
+}
+
+.prose .hljs-attribute,
+.prose .hljs-selector-class {
+  @apply text-yellow-400;
+}
+
+.prose .hljs-function {
+  @apply text-blue-300;
+}
