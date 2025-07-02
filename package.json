@@ -29,6 +29,7 @@
 		"@tailwindcss/vite": "^4.0.0",
 		"@types/bcrypt": "^5.0.2",
 		"@types/node": "^24.0.3",
+		"@types/nodemailer": "^6.4.17",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.0.0",

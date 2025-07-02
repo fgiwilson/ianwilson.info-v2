@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { prisma } from '$lib/server/db.js';
 
-const nodemailer = require("nodemailer");
+import nodemailer from 'nodemailer';
 
 // Create a nodemailer transporter
 const transporter = nodemailer.createTransport({
