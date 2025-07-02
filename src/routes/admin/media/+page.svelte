@@ -232,10 +232,22 @@
               <div class="aspect-w-1 aspect-h-1 bg-gray-100">
                 {#if item.mimetype.startsWith('image/')}
                   <img 
-                    src={item.path.startsWith('/') ? item.path : `/${item.path}`}
+                    src={item.thumbnailPath || item.mediumPath || item.path}
                     alt={item.alt || item.filename}
                     class="object-cover w-full h-full"
                     loading="lazy"
+                    onerror={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      console.log('Image failed to load:', img.src);
+                      // Try fallback to original path if thumbnail fails
+                      if (img.src !== item.path) {
+                        console.log('Trying fallback to original path');
+                        img.src = item.path;
+                      } else {
+                        // If original also fails, use placeholder
+                        img.src = '/images/placeholder-image.png';
+                      }
+                    }}
                   />
                 {:else}
                   <div class="flex items-center justify-center h-full">
@@ -250,7 +262,7 @@
               <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <div class="flex space-x-2">
                   <a 
-                    href={item.path.startsWith('/') ? item.path : `/${item.path}`}
+                    href={item.path.startsWith('http') ? item.path : (item.path.startsWith('/') ? item.path : `/${item.path}`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"

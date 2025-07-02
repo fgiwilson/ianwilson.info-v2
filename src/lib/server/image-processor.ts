@@ -2,6 +2,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { uploadToS3, isS3Configured } from './s3-client';
 
 /**
  * Configuration for image processing
@@ -81,49 +82,78 @@ export async function processImage(
   const outputExt = `.${outputFormat}`;
   const mimetype = `image/${outputFormat}`;
   
-  // Define output paths
-  const uploadDir = 'static/uploads';
+  // Define path structure
   const datePrefix = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const outputDir = path.join(uploadDir, datePrefix);
+  const pathPrefix = `uploads/${datePrefix}`;
   
-  // Ensure directory exists
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+  // Define output keys/paths
+  const originalKey = `${pathPrefix}/${safeBaseName}-${uniqueId}${fileExt}`;
+  const thumbnailKey = `${pathPrefix}/${safeBaseName}-${uniqueId}-thumbnail${outputExt}`;
+  const mediumKey = `${pathPrefix}/${safeBaseName}-${uniqueId}-medium${outputExt}`;
   
-  // Define output filenames
-  const originalFilePath = path.join(outputDir, `${safeBaseName}-${uniqueId}${fileExt}`);
-  const thumbnailFilePath = path.join(outputDir, `${safeBaseName}-${uniqueId}-thumbnail${outputExt}`);
-  const mediumFilePath = path.join(outputDir, `${safeBaseName}-${uniqueId}-medium${outputExt}`);
-  
-  // Save original file
-  fs.writeFileSync(originalFilePath, buffer);
+  // Process the images with Sharp
+  const originalBuffer = buffer;
   
   // Process thumbnail
-  await sharp(buffer)
+  const thumbnailBuffer = await sharp(buffer)
     .resize(options.thumbnailWidth, options.thumbnailHeight, {
       fit: 'cover',
       position: 'center',
     })
     .toFormat(outputFormat, { quality: options.quality })
-    .toFile(thumbnailFilePath);
+    .toBuffer();
   
   // Process medium-sized image
-  await sharp(buffer)
+  const mediumBuffer = await sharp(buffer)
     .resize(options.mediumWidth, options.mediumHeight, {
       fit: 'inside',
       withoutEnlargement: true,
     })
     .toFormat(outputFormat, { quality: options.quality })
-    .toFile(mediumFilePath);
+    .toBuffer();
   
-  // Return paths and metadata
-  return {
-    original: `/${originalFilePath.replace(/\\/g, '/').replace('static/', '')}`,
-    thumbnail: `/${thumbnailFilePath.replace(/\\/g, '/').replace('static/', '')}`,
-    medium: `/${mediumFilePath.replace(/\\/g, '/').replace('static/', '')}`,
-    mimetype,
-    originalFilename,
-    size: buffer.length,
-  };
+  // Check if S3 is configured
+  if (isS3Configured()) {
+    // Upload to S3
+    const originalUrl = await uploadToS3(originalBuffer, originalKey, file.type);
+    const thumbnailUrl = await uploadToS3(thumbnailBuffer, thumbnailKey, `image/${outputFormat}`);
+    const mediumUrl = await uploadToS3(mediumBuffer, mediumKey, `image/${outputFormat}`);
+    
+    return {
+      original: originalUrl,
+      thumbnail: thumbnailUrl,
+      medium: mediumUrl,
+      mimetype,
+      originalFilename,
+      size: buffer.length,
+    };
+  } else {
+    // Fallback to local storage
+    const uploadDir = 'static/uploads';
+    const outputDir = path.join(uploadDir, datePrefix);
+    
+    // Ensure directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
+    // Define local file paths
+    const originalFilePath = path.join(outputDir, `${safeBaseName}-${uniqueId}${fileExt}`);
+    const thumbnailFilePath = path.join(outputDir, `${safeBaseName}-${uniqueId}-thumbnail${outputExt}`);
+    const mediumFilePath = path.join(outputDir, `${safeBaseName}-${uniqueId}-medium${outputExt}`);
+    
+    // Save files locally
+    fs.writeFileSync(originalFilePath, originalBuffer);
+    fs.writeFileSync(thumbnailFilePath, thumbnailBuffer);
+    fs.writeFileSync(mediumFilePath, mediumBuffer);
+    
+    return {
+      original: `/${originalFilePath.replace(/\\/g, '/').replace('static/', '')}`,
+      thumbnail: `/${thumbnailFilePath.replace(/\\/g, '/').replace('static/', '')}`,
+      medium: `/${mediumFilePath.replace(/\\/g, '/').replace('static/', '')}`,
+      mimetype,
+      originalFilename,
+      size: buffer.length,
+    };
+  }
 }

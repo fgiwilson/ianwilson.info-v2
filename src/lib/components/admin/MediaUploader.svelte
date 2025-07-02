@@ -219,14 +219,20 @@
             <div class="aspect-w-1 aspect-h-1 bg-gray-200 rounded-md overflow-hidden">
               {#if media.mimetype.startsWith('image/')}
                 <img 
-                  src={media.path.startsWith('/') ? media.path : `/${media.path}`} 
+                  src={media.thumbnailPath || media.mediumPath || media.path} 
                   alt={media.alt || media.filename} 
                   class="object-cover w-full h-full"
                   onerror={(e) => {
                     const img = e.target as HTMLImageElement;
                     console.log('Image failed to load:', img.src);
-                    // Optionally set a fallback image
-                    // img.src = '/images/placeholder.jpg';
+                    // Try fallback to original path if thumbnail fails
+                    if (img.src !== media.path) {
+                      console.log('Trying fallback to original path');
+                      img.src = media.path;
+                    } else {
+                      // If original also fails, use placeholder
+                      img.src = '/images/placeholder-image.png';
+                    }
                   }}
                 />
               {:else}

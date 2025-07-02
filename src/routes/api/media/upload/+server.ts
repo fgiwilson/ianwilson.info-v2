@@ -8,6 +8,8 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { prisma } from '$lib/server/db.js';
 import { processImage } from '$lib/server/image-processor';
+import { uploadToS3, isS3Configured } from '$lib/server/s3-client';
+import { randomUUID } from 'crypto';
 
 /**
  * Handle media upload requests
@@ -80,25 +82,35 @@ export const POST: RequestHandler = async ({ request, locals }) => {
           // Handle non-image file
           // Generate unique filename
           const timestamp = Date.now();
-          const randomString = Math.random().toString(36).substring(2, 10);
+          const uniqueId = randomUUID();
           const originalName = file.name;
           const extension = originalName.split('.').pop() || '';
-          const filename = `${timestamp}-${randomString}.${extension}`;
-          const relativePath = `/uploads/${filename}`;
-          const fullPath = join(uploadDir, filename);
-
+          const filename = `${timestamp}-${uniqueId}.${extension}`;
+          const datePrefix = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          
           // Read file as ArrayBuffer
           const arrayBuffer = await file.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
 
-          // Save file to disk
-          writeFileSync(fullPath, buffer);
+          let filePath;
+          
+          if (isS3Configured()) {
+            // Upload to S3
+            const s3Key = `uploads/${datePrefix}/${filename}`;
+            filePath = await uploadToS3(buffer, s3Key, file.type);
+          } else {
+            // Save file to local disk
+            const relativePath = `/uploads/${filename}`;
+            const fullPath = join(uploadDir, filename);
+            writeFileSync(fullPath, buffer);
+            filePath = relativePath;
+          }
 
           // Create media record in database
           const media = await prisma.media.create({
             data: {
               filename: originalName,
-              path: relativePath,
+              path: filePath,
               mimetype: file.type,
               size: file.size,
               alt: originalName.split('.')[0] // Default alt text is filename without extension

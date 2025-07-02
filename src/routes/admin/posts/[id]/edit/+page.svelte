@@ -452,7 +452,7 @@
                         {#if import.meta.env.DEV}
                           <div class="w-full h-full relative">
                             <img 
-                              src={media.path.startsWith('/') ? media.path : `/${media.path}`} 
+                              src={media.thumbnailPath || media.mediumPath || media.path} 
                               alt={media.alt || media.filename} 
                               class="object-cover w-full h-full"
                               onerror={(e) => {
@@ -481,7 +481,7 @@
                           </div>
                         {:else}
                           <img 
-                            src={media.path.startsWith('/') ? media.path : `/${media.path}`} 
+                            src={media.thumbnailPath || media.mediumPath || media.path} 
                             alt={media.alt || media.filename} 
                             class="object-cover w-full h-full"
                             onerror={(e) => {
