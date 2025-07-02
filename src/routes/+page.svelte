@@ -2,6 +2,7 @@
   // Import any necessary components or data
   import { onMount } from 'svelte';
   import OptimizedImage from '$lib/components/OptimizedImage.svelte';
+  import { Briefcase, Code, FileText } from 'lucide-svelte';
   
   
   // Profile image URL (placeholder for now)
@@ -10,22 +11,22 @@
   // Feature cards data
   const featureCards = [
     {
+      title: 'Project/Initiatives Management',
+      description: 'Strategic planning, execution, and delivery of projects and initiatives.',
+      icon: 'briefcase',
+      link: '/portfolio?category=initiatives'
+    },
+    {
       title: 'Web Development',
       description: 'Modern, responsive web applications built with cutting-edge technologies.',
       icon: 'code',
       link: '/portfolio?category=web'
     },
     {
-      title: 'UI/UX Design',
-      description: 'User-centered design that balances aesthetics with functionality.',
-      icon: 'design',
-      link: '/portfolio?category=design'
-    },
-    {
-      title: 'Technical Writing',
-      description: 'Clear, concise documentation and articles on web development topics.',
+      title: 'Strategic/Technical Consulting',
+      description: 'Delivering value through strategic and technical consulting services, and development of custom solutions.',
       icon: 'document',
-      link: '/blog?category=technical'
+      link: '/portfolio?category=consulting'
     }
   ];
   
@@ -53,8 +54,9 @@
         </h1>
         
         <p class="text-xl text-text-light leading-relaxed">
-          Full-stack developer specializing in modern web technologies. 
-          I build beautiful, functional websites and applications with a focus on user experience.
+          Initiatives, Strategic Operations and Project Management, 
+          I'm a results-driven professional with a proven track record of delivery. With a strong background in Web Development and Project Management, 
+          I'm passionate about creating innovative solutions that drive business growth and improve efficiency.
         </p>
         
         <div class="flex flex-wrap gap-4 justify-center md:justify-start">
@@ -109,27 +111,12 @@
         >
           <!-- Card Icon -->
           <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 mx-auto md:mx-0">
-            {#if card.icon === 'code'}
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
-            {:else if card.icon === 'design'}
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="12" r="4"></circle>
-                <line x1="21.17" y1="8" x2="12" y2="8"></line>
-                <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
-                <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
-              </svg>
+            {#if card.icon === 'briefcase'}
+              <Briefcase class="w-8 h-8 text-primary"/>
+            {:else if card.icon === 'code'}
+              <Code class="w-8 h-8 text-primary"/>
             {:else if card.icon === 'document'}
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
+              <FileText class="w-8 h-8 text-primary"/>
             {/if}
           </div>
           

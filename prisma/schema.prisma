@@ -180,3 +180,16 @@ model ResumeStat {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
+
+// Contact message model for storing contact form submissions
+model ContactMessage {
+  id                String    @id @default(uuid())
+  name              String
+  email             String
+  subject           String
+  message           String
+  consultingInterest Boolean   @default(false)  // Whether the person is interested in consulting services
+  read              Boolean   @default(false)  // Whether the message has been read
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
