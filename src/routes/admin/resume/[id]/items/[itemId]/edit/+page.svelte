@@ -9,7 +9,6 @@
   // Form state
   let title = $state(data.item.title);
   let subtitle = $state(data.item.subtitle || '');
-  let organization = $state(data.item.organization || '');
   let location = $state(data.item.location || '');
   let startDate = $state(data.item.startDate ? new Date(data.item.startDate).toISOString().split('T')[0] : '');
   let endDate = $state(data.item.endDate ? new Date(data.item.endDate).toISOString().split('T')[0] : '');
@@ -93,23 +92,13 @@
       </div>
       
       <div>
-        <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+        <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-1">Subtitle/Organization</label>
         <input
           type="text"
           id="subtitle"
           name="subtitle"
           bind:value={subtitle}
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
-        />
-      </div>
-      
-      <div>
-        <label for="organization" class="block text-sm font-medium text-gray-700 mb-1">Organization</label>
-        <input
-          type="text"
-          id="organization"
-          name="organization"
-          bind:value={organization}
+          placeholder="Company or organization name"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
         />
       </div>
