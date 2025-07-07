@@ -88,15 +88,26 @@ export const actions: Actions = {
     }
 
     try {
-      // Log the date values for debugging
-      console.log('Date values being saved:', { startDate, endDate, current });
+      // Log the values being saved for debugging
+      console.log('Values being saved:', { 
+        title, 
+        subtitle, 
+        organization, 
+        location, 
+        startDate, 
+        endDate, 
+        current, 
+        description, 
+        order,
+        sectionId
+      });
       
-      // Create the resume item
-      await prisma.resumeItem.create({
+      // Create the resume item with explicit data object
+      const resumeItem = await prisma.resumeItem.create({
         data: {
           title,
-          subtitle,
-          location,
+          subtitle: subtitle || null,
+          location: location || null,
           startDate,
           endDate: current ? null : endDate,
           current,
@@ -108,13 +119,17 @@ export const actions: Actions = {
         }
       });
 
+      // Log the created item
+      console.log('Created resume item:', resumeItem);
+
       // Return success status
       return { success: true };
     } catch (err) {
       console.error('Error creating resume item:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        message: 'Failed to create resume item'
+        message: `Failed to create resume item: ${errorMessage}`
       };
     }
   }

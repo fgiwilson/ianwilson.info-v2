@@ -14,7 +14,7 @@
   let startDate = $state('');
   let endDate = $state('');
   let current = $state(false);
-  let content = $state('');
+  let description = $state(''); // Changed from content to description to match form field
   let order = $state(0);
   let formError = $state('');
   let formSuccess = $state('');
@@ -37,7 +37,7 @@
         startDate = '';
         endDate = '';
         current = false;
-        content = '';
+        description = ''; // Changed from content to description
         order = 0;
         
         // Redirect after a short delay
@@ -182,7 +182,7 @@
         <textarea
           id="description"
           name="description"
-          bind:value={content}
+          bind:value={description}
           rows="8"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
           placeholder="Describe your responsibilities, achievements, etc. using Markdown formatting."
