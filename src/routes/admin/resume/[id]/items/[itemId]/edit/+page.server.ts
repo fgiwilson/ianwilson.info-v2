@@ -76,6 +76,15 @@ export const actions: Actions = {
     }
 
     try {
+      // Log the date values for debugging
+      console.log('Date values being updated:', { 
+        startDate, 
+        endDate, 
+        current,
+        startDateType: startDate ? typeof startDate : 'null',
+        endDateType: endDate ? typeof endDate : 'null'
+      });
+      
       // Update the resume item
       await prisma.resumeItem.update({
         where: { id: itemId },
@@ -83,8 +92,8 @@ export const actions: Actions = {
           title,
           subtitle,
           location,
-          startDate,
-          endDate: current ? null : endDate,
+          startDate: startDate || null,
+          endDate: current ? null : (endDate || null),
           current,
           description,
           order
