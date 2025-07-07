@@ -42,6 +42,7 @@
 			{JSON.stringify(data.jsonLd)}
 		</script>
 	{/if}
+	<script defer src="https://analytics.ianwilson.info/script.js" data-website-id="934fd79d-6dc6-499b-b648-f7831a873a91"></script>
 </svelte:head>
 
 <div class="flex flex-col min-h-screen">
