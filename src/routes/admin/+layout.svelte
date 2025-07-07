@@ -12,8 +12,7 @@
     { href: '/admin/projects', label: 'Projects', icon: 'briefcase' },
     { href: '/admin/resume', label: 'Resume', icon: 'file' },
     { href: '/admin/media', label: 'Media', icon: 'image' },
-    { href: '/admin/profile', label: 'My Profile', icon: 'user' },
-    { href: '/admin/settings', label: 'Settings', icon: 'settings' }
+    { href: '/admin/profile', label: 'My Profile', icon: 'user' }
   ];
   
   // Feather icons initialization
