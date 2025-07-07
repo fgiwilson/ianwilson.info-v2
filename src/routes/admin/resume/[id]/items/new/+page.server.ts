@@ -41,19 +41,20 @@ export const actions: Actions = {
     
     // Get form values
     const title = formData.get('title')?.toString() || '';
-    const subtitle = formData.get('subtitle')?.toString() || '';
-    const organization = formData.get('organization')?.toString() || '';
-    const location = formData.get('location')?.toString() || '';
+    const subtitle = formData.get('subtitle')?.toString() || null;
+    const organization = formData.get('organization')?.toString() || null;
+    const location = formData.get('location')?.toString() || null;
     
-    // Handle date fields
-    let startDate = formData.get('startDate')?.toString() || null;
-    let endDate = formData.get('endDate')?.toString() || null;
+    // Get date strings from form
+    const startDateStr = formData.get('startDate')?.toString() || '';
+    const endDateStr = formData.get('endDate')?.toString() || '';
     
-    // Convert empty strings to null for dates
-    if (startDate === '') startDate = null;
-    if (endDate === '') endDate = null;
+    // Convert date strings to Date objects for Prisma
+    // If empty string, use null
+    const startDate = startDateStr ? new Date(startDateStr) : null;
+    const current = formData.get('current') === 'on' || formData.get('current') === 'true';
+    const endDate = endDateStr && !current ? new Date(endDateStr) : null;
     
-    const current = formData.get('current') === 'on';
     const description = formData.get('description')?.toString() || '';
     const orderStr = formData.get('order')?.toString() || '0';
     const order = parseInt(orderStr, 10);
@@ -94,8 +95,8 @@ export const actions: Actions = {
         subtitle, 
         organization, 
         location, 
-        startDate, 
-        endDate, 
+        startDate: startDate ? startDate.toISOString() : null, 
+        endDate: endDate ? endDate.toISOString() : null, 
         current, 
         description, 
         order,

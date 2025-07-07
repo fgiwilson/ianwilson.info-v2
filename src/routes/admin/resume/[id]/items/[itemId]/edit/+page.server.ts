@@ -45,18 +45,25 @@ export const actions: Actions = {
       throw error(403, 'Unauthorized');
     }
 
-    const { id: sectionId, itemId } = params;
+    const { id, itemId } = params;
     const formData = await request.formData();
     
     // Get form data
-    const title = formData.get('title')?.toString();
+    const title = formData.get('title')?.toString() || '';
     const subtitle = formData.get('subtitle')?.toString() || null;
     const location = formData.get('location')?.toString() || null;
-    const startDate = formData.get('startDate')?.toString() || null;
-    const endDate = formData.get('endDate')?.toString() || null;
+    
+    // Get date strings from form
+    const startDateStr = formData.get('startDate')?.toString() || '';
+    const endDateStr = formData.get('endDate')?.toString() || '';
+    
+    // Convert date strings to Date objects for Prisma
+    // If empty string, use null
+    const startDate = startDateStr ? new Date(startDateStr) : null;
     const current = formData.get('current') === 'on' || formData.get('current') === 'true';
+    const endDate = endDateStr && !current ? new Date(endDateStr) : null;
     const description = formData.get('description')?.toString() || '';
-    const orderStr = formData.get('order')?.toString();
+    const orderStr = formData.get('order')?.toString() || '0';
     
     // Validate required fields
     if (!title) {
@@ -85,28 +92,44 @@ export const actions: Actions = {
         endDateType: endDate ? typeof endDate : 'null'
       });
       
+      // Log form data for debugging
+      console.log('Form data received for update:', {
+        title,
+        subtitle,
+        location,
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate ? endDate.toISOString() : null,
+        current,
+        description,
+        order
+      });
+      
       // Update the resume item
-      await prisma.resumeItem.update({
+      const updatedItem = await prisma.resumeItem.update({
         where: { id: itemId },
         data: {
           title,
           subtitle,
           location,
-          startDate: startDate || null,
-          endDate: current ? null : (endDate || null),
+          startDate,
+          endDate: current ? null : endDate,
           current,
           description,
           order
         }
       });
 
+      // Log the updated item
+      console.log('Updated resume item:', updatedItem);
+
       // If update is successful
       return { success: true };
     } catch (err) {
       console.error('Error updating resume item:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        message: 'Failed to update resume item'
+        message: `Failed to update resume item: ${errorMessage}`
       };
     }
   }
