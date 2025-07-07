@@ -2,6 +2,11 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Readable } from 'stream';
 
+// Determine if we should use path style URLs based on the endpoint
+// Linode and some other providers work better with path style
+const isLinode = process.env.S3_ENDPOINT?.includes('linodeobjects.com');
+const usePathStyle = process.env.S3_PATH_STYLE === 'true' || isLinode;
+
 // Initialize S3 client with environment variables
 const s3Client = new S3Client({
   region: process.env.S3_REGION || 'us-lax-1',
@@ -10,7 +15,7 @@ const s3Client = new S3Client({
     accessKeyId: process.env.S3_ACCESS_KEY || '',
     secretAccessKey: process.env.S3_SECRET_KEY || '',
   },
-  forcePathStyle: false, // Required for some S3-compatible services
+  forcePathStyle: usePathStyle, // Use path style for Linode and when explicitly configured
 });
 
 // S3 bucket name from environment variable
@@ -56,19 +61,21 @@ export async function uploadToS3(
       return `https://${cdnDomain}/${key}`;
     } else {
       // Otherwise, construct the URL from the endpoint and bucket
-      const endpoint = process.env.S3_ENDPOINT || '';
+      let endpoint = process.env.S3_ENDPOINT || '';
+      
+      // Ensure endpoint has https:// prefix for SSL
+      if (!endpoint.startsWith('http')) {
+        endpoint = `https://${endpoint}`;
+      }
       
       // Make sure we have a protocol in the URL
       let fullUrl;
       
       // Handle path-style vs virtual-hosted style URLs
-      if (process.env.S3_PATH_STYLE === 'true') {
+      // Use path style for Linode and when explicitly configured
+      if (usePathStyle) {
         // Path-style URL (https://endpoint/bucket/key)
-        if (endpoint.startsWith('http')) {
-          fullUrl = `${endpoint}/${bucketName}/${key}`;
-        } else {
-          fullUrl = `https://${endpoint}/${bucketName}/${key}`;
-        }
+        fullUrl = `${endpoint}/${bucketName}/${key}`;
       } else {
         // Virtual-hosted style URL (https://bucket.endpoint/key)
         const cleanEndpoint = endpoint.replace(/^https?:\/\//, '');
