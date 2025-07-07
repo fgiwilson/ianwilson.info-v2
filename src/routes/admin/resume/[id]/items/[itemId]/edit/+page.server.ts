@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { prisma } from '$lib/server/db.js';
+import { prisma } from '$lib/server/prisma';
 
 export const load: PageServerLoad = async ({ params, locals }: { params: { id: string; itemId: string }; locals: App.Locals }) => {
   // Check if user is authenticated and has admin role
@@ -76,39 +76,29 @@ export const actions: Actions = {
     }
 
     try {
-      try {
-        // Update the resume item
-        await prisma.resumeItem.update({
-          where: { id: itemId },
-          data: {
-            title,
-            subtitle,
-            location,
-            startDate,
-            endDate: current ? null : endDate,
-            current,
-            description,
-            order
-          }
-        });
-
-        // If update is successful, redirect to the items page
-        return { success: true };
-      } catch (dbError) {
-        // Handle database errors
-        console.error('Database error updating resume item:', dbError);
-        return fail(500, {
-          message: 'Failed to update resume item',
-          values: { title, subtitle, location, startDate, endDate, current, description, order }
-        });
-      }
-    } catch (err) {
-      // This catch block should never be reached with the nested try/catch above
-      console.error('Unexpected error in resume item update:', err);
-      return fail(500, {
-        message: 'An unexpected error occurred',
-        values: { title, subtitle, location, startDate, endDate, current, description, order }
+      // Update the resume item
+      await prisma.resumeItem.update({
+        where: { id: itemId },
+        data: {
+          title,
+          subtitle,
+          location,
+          startDate,
+          endDate: current ? null : endDate,
+          current,
+          description,
+          order
+        }
       });
+
+      // If update is successful
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating resume item:', err);
+      return {
+        success: false,
+        message: 'Failed to update resume item'
+      };
     }
   }
 };
