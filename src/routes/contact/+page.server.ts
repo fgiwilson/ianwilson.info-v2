@@ -92,7 +92,7 @@ export const actions: Actions = {
                 This message was sent from the contact form on your website.
               </p>
             </div>
-          `
+          `,
         });
         
         console.log('Email notification sent successfully');
