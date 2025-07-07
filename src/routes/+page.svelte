@@ -54,8 +54,8 @@
         </h1>
         
         <p class="text-xl text-text-light leading-relaxed">
-          Initiatives, Strategic Operations and Project Management, 
-          I'm a results-driven professional with a proven track record of delivery. With a strong background in Web Development and Project Management, 
+          Initiatives, Strategic Operations and Brand Development and Design consulting, 
+          I'm a results-driven professional with a proven track record of delivery. With a strong background in Web Development, Operational Project Management and Brand Development, 
           I'm passionate about creating innovative solutions that drive business growth and improve efficiency.
         </p>
         
