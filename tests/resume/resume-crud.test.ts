@@ -79,7 +79,7 @@ describe('Resume CRUD Operations', () => {
       
       const data = await response.json();
       
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(data.success).toBe(true);
       expect(data.section.title).toBe(testData.resumeSection.title);
     });
