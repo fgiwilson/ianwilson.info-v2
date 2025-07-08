@@ -15,6 +15,7 @@
   let formError = $state('');
   let formSuccess = $state(false);
   let isSubmitting = $state(false);
+  let siteKey = $state(process.env.TURNSTILE_SITE_KEY) as string;
 
   
   
@@ -203,7 +204,7 @@
           </label>
         </div>
         
-        <Turnstile siteKey={process.env.TURNSTILE_SITE_KEY!} appearance="always" />
+        <Turnstile siteKey={siteKey} appearance="always" />
         <!-- Submit Button -->
         <div class="flex justify-end">
           <button
