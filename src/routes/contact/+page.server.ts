@@ -37,9 +37,9 @@ async function validateToken (token: string, secret: string){
 
 // Create a nodemailer transporter
 const transporter = nodemailer.createTransport({
-  host: 'mail.privateemail.com', // Replace with your SMTP host
-  port: 465,
-  secure: true, // true for 465, false for other ports
+  host: 'smtp.useplunk.com', // Replace with your SMTP host
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER, // Replace with your email
     pass: process.env.EMAIL_PASS, // Replace with your email password or app password
@@ -56,9 +56,9 @@ export const actions: Actions = {
     const message = formData.get('message')?.toString();
     const consultingInterest = formData.get('consultingInterest') === 'on';
     const token = formData.get('cf-turnstile-response');
-    const secretKey = process.env.TURNSTILE_SECRET_KEY;
+    const secretKey = process.env.TURNSTILE_SECRET_KEY as string;
 
-    const { success, error } = await validateToken(token?.toString() || '', secretKey!);
+    const { success, error } = await validateToken(token?.toString() || '', secretKey);
     
 
     // Validate required fields
@@ -101,7 +101,7 @@ export const actions: Actions = {
       // Send email notification
       try {
         await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+          from: 'ian@ianwilson.info',
           to: 'ian@ianwilson.info', // Replace with your receiving email
           subject: `Contact Form: ${subject}`,
           text: `

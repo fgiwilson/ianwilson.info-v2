@@ -60,6 +60,7 @@
 		"@aws-sdk/lib-storage": "^3.840.0",
 		"@lucide/svelte": "^0.522.0",
 		"@prisma/client": "^6.10.0",
+		"@types/cloudflare-turnstile": "^0.2.2",
 		"bcrypt": "^6.0.0",
 		"cookie": "^1.0.2",
 		"crypto-js": "^4.2.0",

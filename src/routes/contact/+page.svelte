@@ -2,6 +2,7 @@
   import { enhance } from '$app/forms';
   import { onMount } from 'svelte';
   import { Turnstile } from 'svelte-turnstile';
+  import { page } from '$app/state';
 
   
   // Form state
@@ -15,7 +16,7 @@
   let formError = $state('');
   let formSuccess = $state(false);
   let isSubmitting = $state(false);
-  let siteKey = process.env.TURNSTILE_SITE_KEY as string;
+  let siteKey = page.data.siteKey;
 
   
   
