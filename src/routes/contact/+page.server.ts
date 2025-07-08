@@ -58,7 +58,7 @@ export const actions: Actions = {
     const token = formData.get('cf-turnstile-response');
     const secretKey = process.env.TURNSTILE_SECRET_KEY as string;
 
-    const { success, error } = await validateToken(token?.toString() || '', secretKey);
+ 
     
 
     // Validate required fields
@@ -85,6 +85,8 @@ export const actions: Actions = {
         consultingInterest
       });
     }
+    const { success, error } = await validateToken(token?.toString() || '', secretKey);
+    
     if(success){
     try {
       // Store the contact message in the database
