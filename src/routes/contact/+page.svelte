@@ -15,7 +15,7 @@
   let formError = $state('');
   let formSuccess = $state(false);
   let isSubmitting = $state(false);
-  let siteKey = $state(process.env.TURNSTILE_SITE_KEY) as string;
+  let siteKey = process.env.TURNSTILE_SITE_KEY as string;
 
   
   
