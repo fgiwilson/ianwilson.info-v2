@@ -4,6 +4,37 @@ import { prisma } from '$lib/server/db.js';
 
 import nodemailer from 'nodemailer';
 
+interface TokenValidateResponse {
+  'error-codes': string[];
+  success: boolean;
+  action: string;
+  cdata: string;
+}
+
+async function validateToken (token: string, secret: string){
+  const response = await fetch(
+    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        secret: secret,
+        response: token,
+      }),
+    },
+  );
+  const data: TokenValidateResponse = await response.json();
+  return {
+    // Return the status
+		success: data.success,
+
+		// Return the first error if it exists
+		error: data['error-codes']?.length ? data['error-codes'][0] : null,
+  }
+}
+
 // Create a nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: 'mail.privateemail.com', // Replace with your SMTP host
@@ -24,7 +55,12 @@ export const actions: Actions = {
     const subject = formData.get('subject')?.toString();
     const message = formData.get('message')?.toString();
     const consultingInterest = formData.get('consultingInterest') === 'on';
+    const token = formData.get('cf-turnstile-response');
+    const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+    const { success, error } = await validateToken(token?.toString() || '', secretKey!);
     
+
     // Validate required fields
     if (!name || !email || !subject || !message) {
       return fail(400, { 
@@ -49,7 +85,7 @@ export const actions: Actions = {
         consultingInterest
       });
     }
-    
+    if(success){
     try {
       // Store the contact message in the database
       const contactMessage = await prisma.contactMessage.create({
@@ -115,5 +151,12 @@ export const actions: Actions = {
         consultingInterest
       });
     }
+  }else if(error){
+  return{
+    error:error || 'Invalid CAPTCHA'
+    
   }
+}
+
+}
 };

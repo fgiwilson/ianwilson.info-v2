@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { onMount } from 'svelte';
+  import { Turnstile } from 'svelte-turnstile';
 
   
   // Form state
@@ -14,6 +15,8 @@
   let formError = $state('');
   let formSuccess = $state(false);
   let isSubmitting = $state(false);
+
+  
   
   // Reset form after successful submission
   function resetForm() {
@@ -73,7 +76,6 @@
 <svelte:head>
   <title>Contact | Ian Wilson</title>
   <meta name="description" content="Get in touch with Ian Wilson for project inquiries, collaborations, or questions." />
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </svelte:head>
 
 <section class="py-16 bg-background">
@@ -201,7 +203,7 @@
           </label>
         </div>
         
-        <div class="g-recaptcha" data-sitekey="6LfFpXQrAAAAAL-0Q2HeOFxzkygUbTatd6Lw49lI"></div>
+        <Turnstile siteKey={process.env.TURNSTILE_SITE_KEY!} appearance="always" />
         <!-- Submit Button -->
         <div class="flex justify-end">
           <button
