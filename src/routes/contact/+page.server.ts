@@ -4,6 +4,15 @@ import { prisma } from '$lib/server/db.js';
 
 import nodemailer from 'nodemailer';
 
+
+const siteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY as string;
+    
+export const load = () => {
+  return {
+    siteKey
+  };
+};
+
 interface TokenValidateResponse {
   'error-codes': string[];
   success: boolean;
@@ -57,6 +66,7 @@ export const actions: Actions = {
     const consultingInterest = formData.get('consultingInterest') === 'on';
     const token = formData.get('cf-turnstile-response');
     const secretKey = process.env.TURNSTILE_SECRET_KEY as string;
+
 
  
     
