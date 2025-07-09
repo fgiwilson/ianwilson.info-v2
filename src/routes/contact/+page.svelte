@@ -68,7 +68,12 @@
           formSuccess = false;
         }, 5000);
       } else {
-        formError = 'There was an error sending your message. Please try again.';
+        // Check if there's a specific error message from the server
+        if (result.type === 'failure' && result.data?.error) {
+          formError = result.data.error;
+        } else {
+          formError = 'There was an error sending your message. Please try again.';
+        }
         isSubmitting = false;
       }
     };

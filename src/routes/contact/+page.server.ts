@@ -87,7 +87,18 @@ export const actions: Actions = {
     }
     const { success, error } = await validateToken(token?.toString() || '', secretKey);
     
-    if(success){
+    // If Turnstile validation fails, return a specific error
+    if (!success) {
+      return fail(400, { 
+        error: 'CAPTCHA validation failed. Please try again.',
+        name,
+        email,
+        subject,
+        message,
+        consultingInterest
+      });
+    }
+    
     try {
       // Store the contact message in the database
       const contactMessage = await prisma.contactMessage.create({
@@ -153,12 +164,5 @@ export const actions: Actions = {
         consultingInterest
       });
     }
-  }else if(error){
-  return{
-    error:error || 'Invalid CAPTCHA'
-    
   }
-}
-
-}
 };
