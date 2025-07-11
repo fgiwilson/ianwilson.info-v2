@@ -70,6 +70,25 @@ export const actions: Actions = {
         return fail(400, { error: 'New password and confirmation do not match' });
       }
       
+      // For a single-user system, check if there are any unexpected additional users
+      if (email !== user.email) {
+        // Count total users in the system - should be 1
+        const userCount = await prisma.user.count();
+        console.log(`Total users in system: ${userCount}`);
+        
+        if (userCount > 1) {
+          // If multiple users exist, check if email is already taken
+          const existingUser = await prisma.user.findUnique({
+            where: { email }
+          });
+          
+          if (existingUser && existingUser.id !== locals.user.id) {
+            console.log(`Email conflict detected: ${email} is already used by user ID ${existingUser.id}`);
+            return fail(400, { error: 'Email address is already in use by another account' });
+          }
+        }
+      }
+      
       // Prepare update data
       const updateData: any = {
         email,
