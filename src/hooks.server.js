@@ -41,12 +41,19 @@ export async function handle({ event, resolve }) {
   
   // Check for session cookie and validate
   const sessionCookie = event.cookies.get('session');
+  console.log(`Request path: ${event.url.pathname}, Session cookie present: ${!!sessionCookie}`);
+  
   if (sessionCookie) {
+    console.log('Validating session cookie');
     /** @type {User|null} */
     const user = await validateSession(sessionCookie);
+    
     if (user) {
+      console.log(`Session valid for user: ${user.email}, role: ${user.role}`);
       // Set user in locals for use in routes
       event.locals.user = user;
+    } else {
+      console.log('Session validation failed - invalid or expired token');
     }
   }
   
@@ -54,12 +61,19 @@ export async function handle({ event, resolve }) {
   const isAdminRoute = event.url.pathname.startsWith('/admin');
   const isLoginRoute = event.url.pathname === '/admin/login';
   
+  console.log(`Route protection check: isAdminRoute=${isAdminRoute}, isLoginRoute=${isLoginRoute}, isAuthenticated=${!!event.locals.user}`);
+  
   if (isAdminRoute && !isLoginRoute && !event.locals.user) {
+    console.log('Unauthorized admin access attempt - redirecting to login');
     // Redirect to login if trying to access admin routes without authentication
     return new Response(null, {
       status: 302,
       headers: { Location: '/admin/login' }
     });
+  }
+  
+  if (isAdminRoute && event.locals.user) {
+    console.log(`Authorized admin access: ${event.url.pathname}`);
   }
   
   return await resolve(event);

@@ -26,13 +26,17 @@ export const actions = {
     }
     
     // Authenticate user
+    console.log(`Attempting to authenticate user: ${email}`);
     const user = await authenticateUser(email.toString(), password.toString());
     
     if (!user) {
+      console.log('Authentication failed: Invalid email or password');
       return fail(401, {
         message: 'Invalid email or password'
       });
     }
+    
+    console.log('Authentication successful:', { id: user.id, email: user.email, role: user.role });
     
     // Check if user has admin role
     if (user.role !== 'admin' && user.role !== 'editor') {
@@ -42,9 +46,12 @@ export const actions = {
     }
     
     // Create session
+    console.log('Creating session for user:', user.id);
     const session = await createSession(user);
+    console.log('Session created:', { id: session.id, expiresAt: session.expiresAt });
     
     // Set session cookie
+    console.log('Setting session cookie');
     cookies.set('session', session.token, {
       path: '/',
       httpOnly: true,
@@ -53,6 +60,7 @@ export const actions = {
       maxAge: 60 * 60 * 24 * 7 // 7 days
     });
     
+    console.log('Attempting redirect to /admin');
     // Redirect to admin dashboard
     throw redirect(302, '/admin');
   }
