@@ -14,6 +14,7 @@
       
       if (result.type === 'redirect') {
         // Let the browser handle the redirect
+        window.location.href = '/admin';
       }
     };
   };
