@@ -4,7 +4,6 @@
 
 import { fail, redirect } from '@sveltejs/kit';
 import { authenticateUser, createSession } from '$lib/server/auth';
-import cookie from 'cookie';
 
 /** @type {import('./$types').Actions} */
 export const actions = {
