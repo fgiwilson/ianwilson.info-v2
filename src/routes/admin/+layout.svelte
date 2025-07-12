@@ -110,6 +110,7 @@
           <a 
             href="/" 
             class="flex items-center px-4 py-2 text-sm text-white hover:bg-primary-dark rounded-md"
+            target="_blank"
           >
             <span class="mr-3" data-feather="external-link"></span>
             View Site
