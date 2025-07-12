@@ -3,7 +3,10 @@
 
   // Automatically submit the form when the page loads
   onMount(() => {
-    document.getElementById('logout-form').submit();
+    const form = document.getElementById('logout-form');
+    if (form && form instanceof HTMLFormElement) {
+      form.submit();
+    }
   });
 </script>
 
