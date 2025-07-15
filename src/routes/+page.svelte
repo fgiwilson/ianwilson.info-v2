@@ -6,7 +6,7 @@
   
   
   // Profile image URL (placeholder for now)
-  const profileImageUrl = `/images/profile-placeholder.jpg`;
+  const profileImageUrl = `/images/profile_400_bw.jpg`;
   
   // Feature cards data
   const featureCards = [
