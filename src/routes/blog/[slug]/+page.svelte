@@ -39,19 +39,5 @@
     <div>
       {@html marked(post.content || '')}
     </div>
-    
-    {#if post.images && post.images.length > 0}
-      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {#each post.images as image}
-          <div>
-            <img 
-              src={image.path} 
-              alt={image.alt || ''} 
-              class="w-full h-auto rounded-md shadow"
-            />
-          </div>
-        {/each}
-      </div>
-    {/if}
   </BlogLayout>
 {/if}

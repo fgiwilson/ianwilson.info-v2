@@ -1,133 +1,174 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { page } from '$app/state';
+  import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import MediaUploader from '$lib/components/admin/MediaUploader.svelte';
-  
-  // Media interface
-  interface Media {
+
+  interface MediaItem {
     id: string;
     filename: string;
     path: string;
-    thumbnailPath: string | null;
-    mediumPath: string | null;
+    thumbnailPath?: string;
+    mediumPath?: string;
     mimetype: string;
     size: number;
-    alt: string | null;
-    createdAt: Date;
-    updatedAt: Date;
+    alt?: string;
+    createdAt: string | Date;
   }
-  
-  // Props from server
-  const { data } = $props();
-  
-  // Media state
-  let media = $state<Media[]>(data.media || []);
-  
-  // Check URL parameters for success/error messages
-  const urlParams = $state(page.url.searchParams);
-  const showSuccessMessage = $derived(urlParams.get('success') === 'true');
-  const showErrorMessage = $derived(urlParams.get('error') === 'true');
-  const message = $derived(urlParams.get('message') || '');
-  
-  // Auto-hide messages after 5 seconds
-  onMount(() => {
-    if (showSuccessMessage || showErrorMessage) {
-      setTimeout(() => {
-        // Remove the query parameter without refreshing the page
-        const url = new URL(window.location.href);
-        url.searchParams.delete('success');
-        url.searchParams.delete('error');
-        url.searchParams.delete('message');
-        window.history.replaceState({}, '', url);
-      }, 5000);
-    }
-  });
-  
-  // Filter state
-  let searchTerm = $state('');
-  let filterType = $state('all');
-  
-  // Computed filtered media
-  const filteredMediaItems = $derived((() => {
-    return [...media]
-      .filter((item: Media) => {
-        // Filter by search term
-        const matchesSearch = searchTerm === '' || 
-          item.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (item.alt && item.alt.toLowerCase().includes(searchTerm.toLowerCase()));
-          
-        // Filter by type
-        const matchesType = filterType === 'all' || 
-          (filterType === 'image' && item.mimetype.startsWith('image/')) ||
-          (filterType === 'document' && !item.mimetype.startsWith('image/'));
-          
-        return matchesSearch && matchesType;
-      })
-      .sort((a: Media, b: Media) => {
-        // Sort by date, newest first
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-  })());
-  
+
+  interface Pagination {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  }
+
+  interface PageData {
+    media: MediaItem[];
+    pagination: Pagination;
+  }
+
+  export let data: PageData;
+
+  let media: MediaItem[] = data.media || [];
+  let pagination: Pagination = data.pagination || { 
+    page: 1, 
+    limit: 20, 
+    totalItems: 0, 
+    totalPages: 0, 
+    hasNextPage: false, 
+    hasPrevPage: false 
+  };
+  let searchTerm = $page.url.searchParams.get('search') || '';
+  let filterType = $page.url.searchParams.get('type') || 'all';
+  let message = '';
+  let showSuccessMessage = false;
+  let showErrorMessage = false;
+
+  // Format file size to human-readable format
+  function formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Format date to human-readable format
+  function formatDate(dateString: string | Date): string {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  // Navigate with query parameters
+  function navigateWithParams(params: Record<string, string>): void {
+    const url = new URL($page.url);
+    
+    // Update or add new parameters
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    
+    // Navigate to the new URL
+    goto(url.toString(), { replaceState: true });
+  }
+
   // Handle media upload completion
   function handleMediaUpload(event: CustomEvent): void {
-    const uploadedMedia = event.detail.media;
-    if (uploadedMedia) {
-      if (Array.isArray(uploadedMedia)) {
-        media = [...uploadedMedia, ...media];
-      } else {
-        media = [uploadedMedia, ...media];
-      }
+    const uploadedMedia = event.detail;
+    if (uploadedMedia && uploadedMedia.length > 0) {
+      message = `Successfully uploaded ${uploadedMedia.length} file(s)`;
+      showSuccessMessage = true;
+      setTimeout(() => {
+        showSuccessMessage = false;
+      }, 3000);
       
-      // Show success message
-      const url = new URL(window.location.href);
-      url.searchParams.set('success', 'true');
-      url.searchParams.set('message', 'Media uploaded successfully');
-      window.history.replaceState({}, '', url);
+      // Refresh the page to show new uploads
+      goto($page.url.pathname, { replaceState: true });
     }
   }
-  
-  // Format file size for display
-  function formatFileSize(bytes: number): string {
+
+  // Handle media deletion
+  function handleDelete({ form, data, action, cancel }: any) {
+    return async ({ result, update }: any) => {
+      if (result.type === 'success') {
+        message = 'Media deleted successfully';
+        showSuccessMessage = true;
+        setTimeout(() => {
+          showSuccessMessage = false;
+        }, 3000);
+        
+        // Refresh the page to update the media list
+        goto($page.url.pathname + $page.url.search, { replaceState: true });
+      } else {
+        message = result.data?.message || 'Failed to delete media';
+        showErrorMessage = true;
+        setTimeout(() => {
+          showErrorMessage = false;
+        }, 3000);
+      }
+    };
+  }
+
+  // Apply search filter
+  function applySearch(): void {
+    navigateWithParams({ search: searchTerm, page: '1' });
+  }
+
+  // Apply type filter
+  function applyFilter(type: string): void {
+    navigateWithParams({ type, page: '1' });
+  }
+
+  // Clear all filters
+  function clearFilters(): void {
+    searchTerm = '';
+    filterType = 'all';
+    navigateWithParams({ search: '', type: 'all', page: '1' });
+  }
+
+  // Format file size for display (alternative implementation)
+  function formatFileSizeAlt(bytes: number): string {
     if (bytes < 1024) return bytes + ' bytes';
     else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     else return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
-  
-  // Format date for display
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric'
-    });
+
+  // Legacy code - removed duplicate handleDelete function
+
+  // Handle search form submission
+  function handleSearchSubmit(event: SubmitEvent): void {
+    event.preventDefault();
+    applySearch();
   }
   
-  // Handle delete form submission
-  function handleDelete({ form, data, action, cancel }: { form: HTMLFormElement; data: FormData; action: URL; cancel: () => void }) {
-    return async ({ result }: { result: { type: string } }) => {
-      if (result.type === 'success') {
-        // Remove the deleted item from the media array
-        const deletedId = form.get('id') as string;
-        media = media.filter((item: Media) => item.id !== deletedId);
-        
-        // Show success message
-        const url = new URL(window.location.href);
-        url.searchParams.set('success', 'true');
-        url.searchParams.set('message', 'Media deleted successfully');
-        window.history.replaceState({}, '', url);
-        
-        // Auto-hide message after 5 seconds
-        setTimeout(() => {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('success');
-          url.searchParams.delete('message');
-          window.history.replaceState({}, '', url);
-        }, 5000);
+  // Handle filter change
+  function handleFilterChange(event: Event): void {
+    applyFilter(filterType);
+  }
+
+  // Add global function for form submission handling
+  function handleDeleteSubmit(form: HTMLFormElement): void {
+    fetch(form.action, { 
+      method: 'POST', 
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        window.location.href = window.location.pathname + '?success=true&message=Media+deleted+successfully';
+      } else {
+        window.location.href = window.location.pathname + '?error=true&message=Failed+to+delete+media';
       }
-    };
+    });
   }
 </script>
 
@@ -191,35 +232,53 @@
         
         <div class="mt-3 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <!-- Search -->
-          <div class="relative rounded-md shadow-sm">
-            <input
-              type="text"
-              bind:value={searchTerm}
-              placeholder="Search media..."
-              class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
-            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
+          <form class="flex" onsubmit={handleSearchSubmit}>
+            <div class="relative rounded-md shadow-sm">
+              <input
+                type="text"
+                bind:value={searchTerm}
+                placeholder="Search media..."
+                class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </div>
             </div>
-          </div>
+            <button
+              type="submit"
+              class="ml-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              aria-label="Search media"
+            >Search</button>
+          </form>
           
           <!-- Filter -->
           <select
             bind:value={filterType}
+            onchange={handleFilterChange}
             class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
           >
             <option value="all">All Files</option>
             <option value="image">Images</option>
             <option value="document">Documents</option>
           </select>
+          
+          <!-- Clear filters -->
+          <button
+            type="button"
+            onclick={clearFilters}
+            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            aria-label="Clear filters"
+          >
+            Clear Filters
+          </button>
         </div>
       </div>
       
-      {#if filteredMediaItems.length === 0}
+      {#if media.length === 0}
         <div class="text-center py-8">
-          {#if media.length === 0}
+          {#if pagination.totalItems === 0}
             <p class="text-gray-500">No media files have been uploaded yet.</p>
           {:else}
             <p class="text-gray-500">No media files match your search criteria.</p>
@@ -227,7 +286,7 @@
         </div>
       {:else}
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {#each filteredMediaItems as item}
+          {#each media as item}
             <div class="relative group border border-gray-200 rounded-md overflow-hidden">
               <div class="aspect-w-1 aspect-h-1 bg-gray-100">
                 {#if item.mimetype.startsWith('image/')}
@@ -237,17 +296,11 @@
                     class="object-cover w-full h-full"
                     loading="lazy"
                     onerror={(e) => {
-                      const img = e.target as HTMLImageElement;
-                      console.log('Image failed to load:', img.src);
-                      // Try fallback to original path if thumbnail fails
-                      if (img.src !== item.path) {
-                        console.log('Trying fallback to original path');
-                        img.src = item.path;
-                      } else {
-                        // If original also fails, use placeholder
-                        img.src = '/images/placeholder-image.png';
-                      }
+                      const img = e.currentTarget as HTMLImageElement;
+                      img.onerror = null; 
+                      img.src = '/images/placeholder-image.png';
                     }}
+                    data-original={item.path}
                   />
                 {:else}
                   <div class="flex items-center justify-center h-full">
@@ -265,7 +318,7 @@
                     href={item.path.startsWith('http') ? item.path : (item.path.startsWith('/') ? item.path : `/${item.path}`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                    class="text-white p-2 rounded-full hover:bg-gray-700 bg-gray-800"
                     aria-label="View media details"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -277,7 +330,7 @@
                   <form 
                     method="POST" 
                     action="?/delete" 
-                    use:enhance={handleDelete as any}
+                    onsubmit={(e: SubmitEvent) => { e.preventDefault(); handleDeleteSubmit(e.currentTarget as HTMLFormElement); }}
                     class="inline-block"
                   >
                     <input type="hidden" name="id" value={item.id} />
@@ -298,11 +351,90 @@
               <div class="p-2">
                 <p class="text-sm font-medium text-gray-900 truncate" title={item.filename}>{item.filename}</p>
                 <p class="text-xs text-gray-500">{formatFileSize(item.size)}</p>
-                <p class="text-xs text-gray-500">{formatDate(item.createdAt.toString())}</p>
+                <p class="text-xs text-gray-500">{formatDate(item.createdAt)}</p>
               </div>
             </div>
           {/each}
         </div>
+        
+        <!-- Pagination Controls -->
+        {#if pagination.totalPages > 1}
+          <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+            <div class="flex flex-1 justify-between sm:hidden">
+              <button 
+                type="button" 
+                class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 {!pagination.hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}" 
+                disabled={!pagination.hasPrevPage}
+                onclick={() => navigateWithParams({ page: String(pagination.page - 1) })}
+              >
+                Previous
+              </button>
+              <button 
+                type="button" 
+                class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 {!pagination.hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}" 
+                disabled={!pagination.hasNextPage}
+                onclick={() => navigateWithParams({ page: String(pagination.page + 1) })}
+              >
+                Next
+              </button>
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Showing <span class="font-medium">{((pagination.page - 1) * pagination.limit) + 1}</span> to <span class="font-medium">{Math.min(pagination.page * pagination.limit, pagination.totalItems)}</span> of{' '}
+                  <span class="font-medium">{pagination.totalItems}</span> results
+                </p>
+              </div>
+              <div>
+                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <!-- Previous Page -->
+                  <button
+                    type="button"
+                    class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 {!pagination.hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}"
+                    disabled={!pagination.hasPrevPage}
+                    onclick={() => navigateWithParams({ page: String(pagination.page - 1) })}
+                    aria-label="Previous page"
+                  >
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  
+                  <!-- Page Numbers -->
+                  {#each Array(pagination.totalPages) as _, i}
+                    {#if i + 1 === pagination.page || i + 1 === 1 || i + 1 === pagination.totalPages || (i + 1 >= pagination.page - 1 && i + 1 <= pagination.page + 1)}
+                      <button
+                        type="button"
+                        class="relative inline-flex items-center px-4 py-2 text-sm font-semibold {i + 1 === pagination.page ? 'bg-primary text-white focus:z-20 focus-visible:outline-offset-2 focus-visible:outline-primary' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'}"
+                        onclick={() => navigateWithParams({ page: String(i + 1) })}
+                        aria-current={i + 1 === pagination.page ? 'page' : undefined}
+                      >
+                        {i + 1}
+                      </button>
+                    {:else if (i === 1 && pagination.page > 3) || (i === pagination.totalPages - 2 && pagination.page < pagination.totalPages - 2)}
+                      <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                        ...
+                      </span>
+                    {/if}
+                  {/each}
+                  
+                  <!-- Next Page -->
+                  <button
+                    type="button"
+                    class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 {!pagination.hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}"
+                    disabled={!pagination.hasNextPage}
+                    onclick={() => navigateWithParams({ page: String(pagination.page + 1) })}
+                    aria-label="Next page"
+                  >
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        {/if}
       {/if}
     </div>
   </div>

@@ -18,6 +18,12 @@
   let isLoading = $state(true);
   let error = $state('');
   let searchQuery = $state('');
+  let currentPage = $state(1);
+  let totalPages = $state(1);
+  let hasNextPage = $state(false);
+  let hasPrevPage = $state(false);
+  let totalItems = $state(0);
+  let itemsPerPage = $state(12);
   
   // Derived values
   const title = $derived(props.title || 'Select Image');
@@ -26,33 +32,72 @@
   const selectedImage = $derived(props.selectedImage);
   const id = $derived(props.id || `image-picker-${Math.random().toString(36).substring(2, 9)}`);
   
-  // Filter media items based on search query
-  const filteredMediaItems = $derived(
-    searchQuery 
-      ? mediaItems.filter(item => 
-          item.filename.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : mediaItems
-  );
+  // Handle search submission
+  function handleSearch() {
+    currentPage = 1; // Reset to first page when searching
+    loadMediaItems();
+  }
+  
+  // Navigate to next page
+  function nextPage() {
+    if (hasNextPage) {
+      currentPage++;
+      loadMediaItems();
+    }
+  }
+  
+  // Navigate to previous page
+  function prevPage() {
+    if (hasPrevPage) {
+      currentPage--;
+      loadMediaItems();
+    }
+  }
+  
+  // Go to specific page
+  function goToPage(page: number) {
+    if (page >= 1 && page <= totalPages) {
+      currentPage = page;
+      loadMediaItems();
+    }
+  }
   
   // Load media items on mount
   onMount(async () => {
     await loadMediaItems();
   });
   
-  // Load media items from the server
+  // Load media items from the server with pagination and search
   async function loadMediaItems() {
     isLoading = true;
     error = '';
     
     try {
-      const response = await fetch('/api/media');
+      // Build URL with query parameters
+      const url = new URL('/api/media', window.location.origin);
+      url.searchParams.set('page', currentPage.toString());
+      url.searchParams.set('limit', itemsPerPage.toString());
+      
+      if (searchQuery) {
+        url.searchParams.set('search', searchQuery);
+      }
+      
+      const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
       mediaItems = data.media || [];
+      
+      // Update pagination state
+      if (data.pagination) {
+        currentPage = data.pagination.page;
+        totalPages = data.pagination.totalPages;
+        hasNextPage = data.pagination.hasNextPage;
+        hasPrevPage = data.pagination.hasPrevPage;
+        totalItems = data.pagination.totalItems;
+      }
     } catch (err) {
       console.error('Failed to load media items:', err);
       error = 'Failed to load media items. Please try again.';
@@ -148,17 +193,24 @@
         <div class="px-6 py-3 border-b">
           <div class="flex items-center space-x-4">
             <div class="flex-1">
-              <input
-                type="text"
-                placeholder="Search media..."
-                bind:value={searchQuery}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-              />
+              <form onsubmit={e => { e.preventDefault(); handleSearch(); }} class="flex">
+                <input
+                  type="text"
+                  placeholder="Search media..."
+                  bind:value={searchQuery}
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                />
+                <button
+                  type="submit"
+                  class="ml-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  aria-label="Search media"
+                >Search</button>
+              </form>
             </div>
             <button
               type="button"
-              onclick={loadMediaItems}
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              onclick={() => { searchQuery = ''; handleSearch(); }}
+              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               Refresh
             </button>
@@ -178,13 +230,13 @@
             <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
               {error}
             </div>
-          {:else if filteredMediaItems.length === 0}
+          {:else if mediaItems.length === 0}
             <div class="text-center py-8 text-gray-500">
               {searchQuery ? 'No media items match your search' : 'No media items found'}
             </div>
           {:else}
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {#each filteredMediaItems as media}
+              {#each mediaItems as media}
                 <div 
                   class="border rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow bg-gray-50"
                   onclick={() => selectImage(media)}
@@ -207,6 +259,39 @@
                 </div>
               {/each}
             </div>
+            
+            <!-- Pagination controls -->
+            {#if totalPages > 1}
+              <div class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+                <div class="flex flex-1 items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-700">
+                      Showing <span class="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span class="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span class="font-medium">{totalItems}</span> results
+                    </p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      type="button"
+                      onclick={prevPage}
+                      disabled={!hasPrevPage}
+                      class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="Previous page"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onclick={nextPage}
+                      disabled={!hasNextPage}
+                      class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="Next page"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {/if}
           {/if}
         </div>
         
