@@ -4,7 +4,7 @@
 
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/db.js';
-import { extractFirstImageUrl } from '$lib/server/utils/markdown.js';
+import { extractFirstImageUrl, findMediaItemByUrl } from '$lib/server/utils/markdown.js';
 
 /** @type {import('./$types').Actions} */
 export const actions = {
@@ -69,12 +69,8 @@ export const actions = {
           const firstImageUrl = extractFirstImageUrl(content.toString());
           
           if (firstImageUrl) {
-            // Find the media item that matches this URL
-            const mediaItem = await prisma.media.findFirst({
-              where: {
-                path: firstImageUrl
-              }
-            });
+            // Find the media item that matches this URL using our robust matching function
+            const mediaItem = await findMediaItemByUrl(firstImageUrl);
             
             if (mediaItem) {
               coverImageData = {
