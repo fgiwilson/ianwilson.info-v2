@@ -93,7 +93,9 @@
             <div class="h-48 overflow-hidden">
               {#if post.coverImage}
                 <OptimizedImage 
-                  src={post.coverImage} 
+                  src={typeof post.coverImage === 'string' ? 
+                    post.coverImage : 
+                    (post.coverImage.path || post.coverImage.url || '')}
                   alt={post.title}
                   width={480}
                   height={288}
@@ -102,10 +104,8 @@
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
               {:else}
-                <div class="w-full h-full bg-primary/20 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-primary/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1M19 20a2 2 0 002-2V8a2 2 0 00-2-2h-5M8 12h8M8 16h4" />
-                  </svg>
+                <div class="bg-gray-200 w-full h-full flex items-center justify-center">
+                  <span class="text-gray-400">No image</span>
                 </div>
               {/if}
             </div>

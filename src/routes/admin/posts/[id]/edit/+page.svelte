@@ -4,6 +4,7 @@
   import { onMount } from 'svelte';
   import { marked } from 'marked';
   import MediaUploader from '$lib/components/admin/MediaUploader.svelte';
+  import ImagePicker from '$lib/components/admin/ImagePicker.svelte';
   
   // Props from server
   const { data } = $props();
@@ -368,6 +369,17 @@
             {#if errors.excerpt}
               <p class="mt-2 text-sm text-red-600">{errors.excerpt}</p>
             {/if}
+          </div>
+          
+          <!-- Cover Image Picker -->
+          <div class="mt-4">
+            <ImagePicker
+              selectedImage={post.coverImage}
+              onSelect={setCoverImage}
+              title="Cover Image"
+              buttonText="Select Cover Image"
+            />
+            <p class="mt-2 text-sm text-gray-500">Select a cover image for your blog post. This will be displayed in listings and at the top of the post.</p>
           </div>
           
           <!-- Content -->

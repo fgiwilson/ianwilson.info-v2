@@ -33,7 +33,7 @@
     date={post.publishedAt || post.createdAt}
     description={post.excerpt || ''}
     tags={post.tags?.map(tag => tag.name) || []}
-    coverImage={post.coverImage?.path || null}
+    coverImage={post.coverImage?.path || post.coverImage?.url || null}
     readingTime={Math.ceil((post.content?.length || 0) / 1500)}
   >
     <div>

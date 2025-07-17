@@ -108,7 +108,7 @@ export function generateBlogJsonLd(post: {
   description: string;
   date: string;
   slug: string;
-  coverImage?: string;
+  coverImage?: string | { path?: string; url?: string; id?: string; } | null;
   tags?: string[];
   author?: {
     name: string;
@@ -122,7 +122,13 @@ export function generateBlogJsonLd(post: {
     'description': post.description,
     'datePublished': new Date(post.date).toISOString(),
     'image': post.coverImage ? 
-      (post.coverImage.startsWith('http') ? post.coverImage : `${siteUrl}${post.coverImage}`) : 
+      (typeof post.coverImage === 'string' ? 
+        (post.coverImage.startsWith('http') ? post.coverImage : `${siteUrl}${post.coverImage}`) : 
+        (post.coverImage?.path || post.coverImage?.url ? 
+          (post.coverImage.path?.startsWith('http') || post.coverImage.url?.startsWith('http') ? 
+            (post.coverImage.path || post.coverImage.url) : 
+            `${siteUrl}${post.coverImage.path || post.coverImage.url}`) : 
+          undefined)) : 
       undefined,
     'url': `${siteUrl}/blog/${post.slug}`,
     'author': post.author ? {

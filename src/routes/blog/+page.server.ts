@@ -29,7 +29,7 @@ export const load: PageServerLoad = async () => {
     description: post.excerpt || '',
     content: post.content,
     tags: post.tags.map(tag => tag.name),
-    coverImage: post.coverImage ? `/uploads/${post.coverImage.filename}` : '/images/blog/default-cover.jpg',
+    coverImage: post.coverImage || null,
     readingTime: Math.ceil(post.content.split(' ').length / 200) // Rough estimate: 200 words per minute
   }));
 

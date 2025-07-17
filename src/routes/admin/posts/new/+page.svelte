@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { onMount } from 'svelte';
+  import ImagePicker from '$lib/components/admin/ImagePicker.svelte';
   
   // Form state
   interface PostState {
@@ -10,6 +11,7 @@
     excerpt: string;
     featured: boolean;
     tags: string[];
+    coverImage: any | null;
   }
   
   const post = $state<PostState>({
@@ -18,7 +20,8 @@
     content: '',
     excerpt: '',
     featured: false,
-    tags: []
+    tags: [],
+    coverImage: null
   });
   
   // Preview state
@@ -79,6 +82,11 @@
     }
   }
   
+  // Handle cover image selection
+  function setCoverImage(media: any): void {
+    post.coverImage = media;
+  }
+
   // Form submission handler
   const handleEnhance = ({ formData }: { formData: FormData }) => {
     // Reset errors
@@ -94,6 +102,11 @@
     const formTitle = formData.get('title');
     const formSlug = formData.get('slug');
     const formContent = formData.get('content');
+    
+    // Add cover image ID to form data if selected
+    if (post.coverImage) {
+      formData.set('coverImageId', post.coverImage.id);
+    }
     
     if (!formTitle) {
       errors.title = 'Title is required';
@@ -224,24 +237,33 @@
           </div>
           
           <!-- Excerpt -->
-          <div>
-            <label for="excerpt" class="block text-sm font-medium text-gray-700">
-              Excerpt
-              <span class="text-gray-500">(optional)</span>
-            </label>
+          <div class="col-span-6">
+            <label for="excerpt" class="block text-sm font-medium text-gray-700">Excerpt (optional)</label>
             <div class="mt-1">
               <textarea
                 id="excerpt"
                 name="excerpt"
                 rows="3"
-                bind:value={post.excerpt}
-                class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border border-gray-300 rounded-md"
                 placeholder="Brief summary of the post"
+                bind:value={post.excerpt}
               ></textarea>
             </div>
+            <p class="mt-2 text-sm text-gray-500">Brief summary shown in listings. If left empty, an excerpt will be generated from the content.</p>
             {#if errors.excerpt}
               <p class="mt-2 text-sm text-red-600">{errors.excerpt}</p>
             {/if}
+          </div>
+          
+          <!-- Cover Image Picker -->
+          <div class="col-span-6">
+            <ImagePicker
+              selectedImage={post.coverImage}
+              onSelect={setCoverImage}
+              title="Cover Image"
+              buttonText="Select Cover Image"
+            />
+            <p class="mt-2 text-sm text-gray-500">Select a cover image for your blog post. This will be displayed in listings and at the top of the post.</p>
           </div>
           
           <!-- Content -->

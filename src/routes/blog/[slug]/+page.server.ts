@@ -12,7 +12,11 @@ interface BlogPostMetadata {
   excerpt?: string;
   date?: string;
   updatedAt?: string;
-  coverImage?: string;
+  coverImage?: {
+    path?: string;
+    url?: string;
+    id?: string;
+  } | string | null;
   tags?: string[];
   category?: string;
   author?: string;
@@ -121,7 +125,9 @@ export const load: PageServerLoad = async ({ params }) => {
       description,
       date: metadata.date || new Date().toISOString(),
       slug: slug,
-      coverImage: metadata.coverImage,
+      coverImage: typeof metadata.coverImage === 'object' && metadata.coverImage ? 
+        (metadata.coverImage.path || metadata.coverImage.url || '') : 
+        (metadata.coverImage as string || ''),
       tags: metadata.tags || [],
       author: metadata.author ? {
         name: metadata.author,

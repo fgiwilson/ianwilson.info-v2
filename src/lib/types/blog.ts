@@ -8,9 +8,14 @@ export interface BlogPost {
   date: string;
   description: string;
   tags: string[];
-  coverImage?: string;
+  coverImage?: {
+    path?: string;
+    url?: string;
+    id?: string;
+  } | string | null;
   readingTime?: number;
   content?: string;
+  id?: string;
 }
 
 export interface BlogPostMetadata {
@@ -18,6 +23,10 @@ export interface BlogPostMetadata {
   date: string;
   description: string;
   tags: string[];
-  coverImage?: string;
+  coverImage?: {
+    path?: string;
+    url?: string;
+    id?: string;
+  } | null;
   readingTime?: number;
 }

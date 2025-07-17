@@ -17,7 +17,7 @@
     {#if coverImage}
       <div class="mb-6 rounded-lg overflow-hidden shadow-md">
         <img 
-          src={coverImage} 
+          src={typeof coverImage === 'object' ? (coverImage.path || coverImage.url) : coverImage} 
           alt={`Cover image for ${title}`} 
           class="w-full h-64 md:h-96 object-cover"
         />
