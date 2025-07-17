@@ -4,6 +4,7 @@
 
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/db.js';
+import { extractFirstImageUrl } from '$lib/server/utils/markdown.js';
 
 /** 
  * Load blog post data for editing
@@ -121,6 +122,38 @@ export const actions = {
         return fail(404, { message: 'Post not found' });
       }
       
+      // Check if we need to extract a cover image from content
+      let coverImageData = {};
+      
+      if (!coverImageId && content) {
+        // Extract the first image URL from the content
+        const firstImageUrl = extractFirstImageUrl(content.toString());
+        
+        if (firstImageUrl) {
+          // Find the media item that matches this URL
+          const mediaItem = await prisma.media.findFirst({
+            where: {
+              path: firstImageUrl
+            }
+          });
+          
+          if (mediaItem) {
+            coverImageData = {
+              coverImage: {
+                connect: { id: mediaItem.id }
+              }
+            };
+            console.log('Automatically set cover image from content:', mediaItem.id);
+          }
+        }
+      } else if (coverImageId) {
+        coverImageData = {
+          coverImage: {
+            connect: { id: coverImageId.toString() }
+          }
+        };
+      }
+      
       // Update blog post
       const post = await prisma.blogPost.update({
         where: { id: params.id },
@@ -139,11 +172,7 @@ export const actions = {
             ...(tags.length > 0 && { connect: tags })
           },
           // Handle cover image
-          ...(coverImageId && {
-            coverImage: {
-              connect: { id: coverImageId.toString() }
-            }
-          }),
+          ...coverImageData,
           // Handle images
           images: {
             // Disconnect all existing images

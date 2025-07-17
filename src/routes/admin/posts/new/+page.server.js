@@ -4,6 +4,7 @@
 
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/db.js';
+import { extractFirstImageUrl } from '$lib/server/utils/markdown.js';
 
 /** @type {import('./$types').Actions} */
 export const actions = {
@@ -60,6 +61,38 @@ export const actions = {
       }
       
       try {
+        // Check if we need to extract a cover image from content
+        let coverImageData = {};
+        
+        if (!coverImageId && content) {
+          // Extract the first image URL from the content
+          const firstImageUrl = extractFirstImageUrl(content.toString());
+          
+          if (firstImageUrl) {
+            // Find the media item that matches this URL
+            const mediaItem = await prisma.media.findFirst({
+              where: {
+                path: firstImageUrl
+              }
+            });
+            
+            if (mediaItem) {
+              coverImageData = {
+                coverImage: {
+                  connect: { id: mediaItem.id }
+                }
+              };
+              console.log('Automatically set cover image from content:', mediaItem.id);
+            }
+          }
+        } else if (coverImageId) {
+          coverImageData = {
+            coverImage: {
+              connect: { id: coverImageId.toString() }
+            }
+          };
+        }
+        
         // Create blog post
         const post = await prisma.blogPost.create({
           data: {
@@ -76,11 +109,7 @@ export const actions = {
                 connect: tags
               }
             }),
-            ...(coverImageId && {
-              coverImage: {
-                connect: { id: coverImageId.toString() }
-              }
-            }),
+            ...coverImageData,
             ...(imageIds.length > 0 && {
               images: {
                 connect: imageIds
