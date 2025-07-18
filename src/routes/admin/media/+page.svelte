@@ -76,8 +76,8 @@
       }
     });
     
-    // Navigate to the new URL
-    goto(url.toString(), { replaceState: true });
+    // Navigate to the new URL with invalidateAll to force a reload
+    goto(url.toString(), { replaceState: false });
   }
 
   // Handle media upload completion
@@ -151,6 +151,9 @@
   
   // Handle filter change
   function handleFilterChange(event: Event): void {
+    // Ensure we're using the latest value from the select element
+    const select = event.target as HTMLSelectElement;
+    filterType = select.value;
     applyFilter(filterType);
   }
 
@@ -232,13 +235,13 @@
         
         <div class="mt-3 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <!-- Search -->
-          <form class="flex" onsubmit={handleSearchSubmit}>
-            <div class="relative rounded-md shadow-sm">
+          <form class="flex w-full sm:w-auto" onsubmit={handleSearchSubmit}>
+            <div class="relative rounded-md shadow-sm flex-grow">
               <input
                 type="text"
                 bind:value={searchTerm}
                 placeholder="Search media..."
-                class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                class="block w-full px-4 py-2 text-base border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -248,7 +251,7 @@
             </div>
             <button
               type="submit"
-              class="ml-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              class="ml-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               aria-label="Search media"
             >Search</button>
           </form>
@@ -257,7 +260,7 @@
           <select
             bind:value={filterType}
             onchange={handleFilterChange}
-            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+            class="block w-full px-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary rounded-md"
           >
             <option value="all">All Files</option>
             <option value="image">Images</option>
