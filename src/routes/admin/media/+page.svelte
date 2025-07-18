@@ -31,22 +31,22 @@
     pagination: Pagination;
   }
 
-  export let data: PageData;
+  const props = $props<{data: PageData}>();
 
-  let media: MediaItem[] = data.media || [];
-  let pagination: Pagination = data.pagination || { 
+  let media = $state(props.data.media || []);
+  let pagination = $state<Pagination>(props.data.pagination || { 
     page: 1, 
     limit: 12, 
     totalItems: 0, 
     totalPages: 0, 
     hasNextPage: false, 
     hasPrevPage: false 
-  };
-  let searchTerm = $page.url.searchParams.get('search') || '';
-  let filterType = $page.url.searchParams.get('type') || 'all';
-  let message = '';
-  let showSuccessMessage = false;
-  let showErrorMessage = false;
+  });
+  let searchTerm = $state($page.url.searchParams.get('search') || '');
+  let filterType = $state($page.url.searchParams.get('type') || 'all');
+  let message = $state('');
+  let showSuccessMessage = $state(false);
+  let showErrorMessage = $state(false);
 
   // Format file size to human-readable format
   function formatFileSize(bytes: number): string {
@@ -63,33 +63,80 @@
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  // Navigate with query parameters
-  async function navigateWithParams(params: Record<string, string>): Promise<void> {
-    const url = new URL($page.url);
+  // Loading state for data fetching
+  let isLoading = $state(false);
+  
+  // Fetch media data directly
+  async function fetchMediaData(params: Record<string, string> = {}): Promise<void> {
+    // Show loading state
+    isLoading = true;
     
-    // Update or add new parameters
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) {
+    try {
+      // Build the query URL
+      const url = new URL($page.url.pathname, window.location.origin);
+      
+      // Add current parameters from the page URL
+      const currentParams = $page.url.searchParams;
+      for (const [key, value] of currentParams.entries()) {
         url.searchParams.set(key, value);
-      } else {
-        url.searchParams.delete(key);
       }
-    });
-    
-    // Navigate to the new URL and ensure the page is reloaded
-    await goto(url.toString(), { invalidateAll: true });
-    
-    // Update local state with the new URL parameters
-    if (params.page) {
-      pagination = { ...pagination, page: parseInt(params.page) };
-    }
-    if (params.search !== undefined) {
-      searchTerm = params.search;
-    }
-    if (params.type !== undefined) {
-      filterType = params.type;
+      
+      // Update with new parameters
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          url.searchParams.set(key, value);
+        } else {
+          url.searchParams.delete(key);
+        }
+      });
+      
+      // Update browser URL without full navigation
+      window.history.pushState({}, '', url.toString());
+      
+      // Update local state with the new parameters
+      if (params.page !== undefined) {
+        pagination = { ...pagination, page: parseInt(params.page) };
+      }
+      if (params.search !== undefined) {
+        searchTerm = params.search;
+      }
+      if (params.type !== undefined) {
+        filterType = params.type;
+      }
+      
+      // Fetch data from the server API endpoint
+      const response = await fetch(`/api/media?${url.searchParams.toString()}`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      // Update the local state with the fetched data
+      media = result.media || [];
+      pagination = result.pagination || pagination;
+    } catch (error) {
+      console.error('Error fetching media data:', error);
+      message = 'Failed to load media items. Please try again.';
+      showErrorMessage = true;
+      setTimeout(() => {
+        showErrorMessage = false;
+      }, 3000);
+    } finally {
+      isLoading = false;
     }
   }
+  
+  // Navigate with query parameters (updates URL and fetches data)
+  async function navigateWithParams(params: Record<string, string>): Promise<void> {
+    await fetchMediaData(params);
+  }
+
+  // Initialize data fetching on mount
+  onMount(() => {
+    // Get initial data based on URL parameters
+    fetchMediaData();
+  });
 
   // Handle media upload completion
   function handleMediaUpload(event: CustomEvent): void {
@@ -101,8 +148,8 @@
         showSuccessMessage = false;
       }, 3000);
       
-      // Refresh the page to show new uploads
-      goto($page.url.pathname, { replaceState: true });
+      // Refresh the data to show new uploads
+      fetchMediaData();
     }
   }
 
@@ -116,8 +163,8 @@
           showSuccessMessage = false;
         }, 3000);
         
-        // Refresh the page to update the media list
-        goto($page.url.pathname + $page.url.search, { replaceState: true });
+        // Refresh the data to update the media list without page navigation
+        fetchMediaData();
       } else {
         message = result.data?.message || 'Failed to delete media';
         showErrorMessage = true;
@@ -290,7 +337,12 @@
         </div>
       </div>
       
-      {#if media.length === 0}
+      {#if isLoading}
+        <div class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          <p class="mt-2 text-gray-500">Loading media...</p>
+        </div>
+      {:else if media.length === 0}
         <div class="text-center py-8">
           {#if pagination.totalItems === 0}
             <p class="text-gray-500">No media files have been uploaded yet.</p>

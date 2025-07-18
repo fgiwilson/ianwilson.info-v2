@@ -20,15 +20,26 @@ export const GET: RequestHandler = async ({ locals, url }) => {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '12');
     const search = url.searchParams.get('search') || '';
+    const type = url.searchParams.get('type') || 'all';
     const skip = (page - 1) * limit;
     
     // Build filter conditions
-    const where = search ? {
-      OR: [
+    let where: any = {};
+    
+    // Add search filter if provided
+    if (search) {
+      where.OR = [
         { filename: { contains: search, mode: 'insensitive' as const } },
         { alt: { contains: search, mode: 'insensitive' as const } }
-      ]
-    } : {};
+      ];
+    }
+    
+    // Add type filter if provided
+    if (type === 'image') {
+      where.mimetype = { startsWith: 'image/' };
+    } else if (type === 'document') {
+      where.NOT = { mimetype: { startsWith: 'image/' } };
+    }
     
     // Fetch media items with pagination and filtering
     const [mediaItems, totalCount] = await Promise.all([

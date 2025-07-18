@@ -179,9 +179,10 @@
     }
     
     /* Hide the print button when printing */
-    button {
+
+    /*button {
       display: none;
-    }
+    }*/
     
     /* Adjust layout for print */
     :global(.flex-col) {
