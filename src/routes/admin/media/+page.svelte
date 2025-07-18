@@ -36,7 +36,7 @@
   let media: MediaItem[] = data.media || [];
   let pagination: Pagination = data.pagination || { 
     page: 1, 
-    limit: 20, 
+    limit: 12, 
     totalItems: 0, 
     totalPages: 0, 
     hasNextPage: false, 
