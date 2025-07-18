@@ -64,7 +64,7 @@
   }
 
   // Navigate with query parameters
-  function navigateWithParams(params: Record<string, string>): void {
+  async function navigateWithParams(params: Record<string, string>): Promise<void> {
     const url = new URL($page.url);
     
     // Update or add new parameters
@@ -76,8 +76,19 @@
       }
     });
     
-    // Navigate to the new URL with invalidateAll to force a reload
-    goto(url.toString(), { replaceState: false });
+    // Navigate to the new URL and ensure the page is reloaded
+    await goto(url.toString(), { invalidateAll: true });
+    
+    // Update local state with the new URL parameters
+    if (params.page) {
+      pagination = { ...pagination, page: parseInt(params.page) };
+    }
+    if (params.search !== undefined) {
+      searchTerm = params.search;
+    }
+    if (params.type !== undefined) {
+      filterType = params.type;
+    }
   }
 
   // Handle media upload completion
