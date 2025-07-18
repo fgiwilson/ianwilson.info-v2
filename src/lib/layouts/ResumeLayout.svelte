@@ -129,6 +129,7 @@
           </div>
           
           <!-- Print button -->
+          <!--
           <button 
             class="self-start md:self-auto bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
             onclick={() => window.print()}
@@ -141,6 +142,7 @@
             </svg>
             Print
           </button>
+          -->
         </div>
       </header>
       
