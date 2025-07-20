@@ -298,7 +298,7 @@
           // Use a placeholder if src is missing
           imgElement.src = image.thumbnail || image.src || '/images/placeholder.jpg';
           imgElement.alt = image.alt || '';
-          imgElement.className = 'w-full h-full object-cover hover:opacity-90 transition-opacity duration-300';
+          imgElement.className = 'w-full h-full object-contain hover:opacity-90 transition-opacity duration-300';
           imgElement.loading = 'lazy';
           imgElement.onerror = () => {
             // Fallback to placeholder if image fails to load
