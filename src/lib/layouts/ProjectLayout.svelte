@@ -1,4 +1,6 @@
 <script>
+  import { onMount } from 'svelte';
+  
   // Get the frontmatter metadata from the markdown file using Svelte 5 runes
   let {
     title,
@@ -13,6 +15,51 @@
     githubUrl = null,
     children // Add children prop to receive content
   } = $props();
+  
+  // Define the custom window interface for TypeScript
+  interface CustomWindow extends Window {
+    imageModal?: {
+      open: (imageUrl: string, alt?: string) => void;
+      close: () => void;
+    };
+  }
+  
+  // Function to open modal for gallery images
+  function openImageModal(imageUrl: string, alt: string) {
+    const customWindow = window as unknown as CustomWindow;
+    if (customWindow.imageModal) {
+      customWindow.imageModal.open(imageUrl, alt);
+    }
+  }
+  
+  // Add modal functionality to gallery images after mount
+  onMount(() => {
+    // Add click handlers to project gallery images
+    const galleryImages = document.querySelectorAll('.project-gallery-image');
+    galleryImages.forEach((img) => {
+      const imgElement = img as HTMLImageElement;
+      const imageUrl = imgElement.src;
+      const imageAlt = imgElement.alt;
+      
+      // Make image clickable
+      imgElement.style.cursor = 'pointer';
+      imgElement.tabIndex = 0;
+      imgElement.setAttribute('role', 'button');
+      imgElement.setAttribute('aria-label', `View ${imageAlt} in full size`);
+      
+      // Add click handler
+      imgElement.onclick = () => {
+        openImageModal(imageUrl, imageAlt);
+      };
+      
+      // Add keyboard handler
+      imgElement.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          openImageModal(imageUrl, imageAlt);
+        }
+      };
+    });
+  });
 </script>
 
 <article class="project-case-study max-w-5xl mx-auto px-4 py-8">
@@ -124,11 +171,11 @@
       <h2 class="text-2xl font-bold text-primary mb-6">Project Gallery</h2>
       <div class="flex flex-row gap-4">
         {#each gallery as image}
-          <div class="flex rounded-lg overflow-hidden shadow-md flex-1">
+          <div class="flex rounded-lg overflow-hidden shadow-md flex-1 hover:shadow-lg transition-shadow duration-300">
             <img 
               src={image.url} 
               alt={image.alt || `${title} gallery image`} 
-              class="w-full h-full object-cover"
+              class="project-gallery-image w-full h-full object-contain hover:opacity-90 transition-opacity duration-300"
             />
           </div>
         {/each}
