@@ -105,6 +105,39 @@ export const load: PageServerLoad = async ({ params }) => {
     // Check if the markdown post exists
     if (!postFiles[postPath]) {
       console.error(`Post not found in markdown or database: ${slug}`);
+      
+      // If we're in development mode, create a temporary post for testing
+      if (import.meta.env.DEV && slug === 'test-blog-1') {
+        console.log('Creating temporary test post for development');
+        return {
+          post: {
+            id: 'test-id',
+            title: 'Test Blog Post',
+            content: '# Test Blog Post\n\nThis is a test blog post for development.\n\n![Test Image](/images/placeholder.jpg)',
+            excerpt: 'This is a test blog post for development.',
+            slug: 'test-blog-1',
+            publishedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            author: { name: 'Test Author' },
+            tags: [{ name: 'Test' }],
+            coverImage: { path: '/images/placeholder.jpg' },
+            images: []
+          },
+          isMarkdown: false,
+          title: 'Test Blog Post',
+          description: 'This is a test blog post for development.',
+          image: '/images/placeholder.jpg',
+          article: {
+            publishedTime: new Date().toISOString(),
+            modifiedTime: new Date().toISOString(),
+            tags: ['Test'],
+            section: 'Blog'
+          },
+          jsonLd: '{}'
+        };
+      }
+      
       throw error(404, `Could not find blog post: ${slug}`);
     }
     

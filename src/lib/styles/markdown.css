@@ -59,6 +59,23 @@
   @apply rounded-lg my-6 max-w-full;
 }
 
+/* Markdown image gallery styles */
+.markdown-gallery {
+  @apply my-8;
+}
+
+.markdown-gallery .gallery-title {
+  @apply text-lg font-medium mb-4 text-primary;
+}
+
+.markdown-image {
+  @apply max-h-[500px] object-contain;
+}
+
+.markdown-modal-image {
+  @apply cursor-pointer hover:opacity-90 transition-opacity max-w-full rounded-lg shadow-md;
+}
+
 .prose hr {
   @apply border-t border-gray-200 my-8;
 }

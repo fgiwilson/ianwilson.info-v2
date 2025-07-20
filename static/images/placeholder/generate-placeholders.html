@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Placeholder Image Generator</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #2D5A5C;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    input, select {
+      padding: 8px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Placeholder Image Generator</h1>
+  <p>Generate placeholder images for the markdown gallery demo</p>
+  
+  <div class="controls">
+    <label for="width">Width:</label>
+    <input type="number" id="width" value="800" min="100" max="2000">
+    
+    <label for="height">Height:</label>
+    <input type="number" id="height" value="600" min="100" max="2000">
+    
+    <label for="color">Background:</label>
+    <select id="color">
+      <option value="#2D5A5C">Teal (Primary)</option>
+      <option value="#FF8C00">Orange (Accent)</option>
+      <option value="#4A90E2">Blue</option>
+      <option value="#50C878">Green</option>
+      <option value="#C74375">Pink</option>
+    </select>
+    
+    <button id="generate">Generate</button>
+    <button id="download">Download</button>
+  </div>
+  
+  <canvas id="canvas"></canvas>
+  
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const widthInput = document.getElementById('width');
+    const heightInput = document.getElementById('height');
+    const colorSelect = document.getElementById('color');
+    const generateBtn = document.getElementById('generate');
+    const downloadBtn = document.getElementById('download');
+    
+    // Generate initial placeholder
+    generatePlaceholder();
+    
+    // Event listeners
+    generateBtn.addEventListener('click', generatePlaceholder);
+    downloadBtn.addEventListener('click', downloadImage);
+    
+    function generatePlaceholder() {
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+      const color = colorSelect.value;
+      
+      // Set canvas size
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Fill background
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, width, height);
+      
+      // Add text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${Math.max(20, Math.min(width, height) / 10)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${width} × ${height}`, width / 2, height / 2);
+      
+      // Add border
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(10, 10, width - 20, height - 20);
+    }
+    
+    function downloadImage() {
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+      const link = document.createElement('a');
+      link.download = `placeholder-${width}x${height}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.8);
+      link.click();
+    }
+  </script>
+</body>
+</html>
