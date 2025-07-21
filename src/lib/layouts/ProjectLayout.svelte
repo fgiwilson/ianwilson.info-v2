@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   
   // Get the frontmatter metadata from the markdown file using Svelte 5 runes
