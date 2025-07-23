@@ -1,7 +1,7 @@
 <script lang="ts">
   // Get current year for copyright
   const currentYear = new Date().getFullYear();
-  import { Github, Palette, Linkedin } from '@lucide/svelte';
+  import '@awesome.me/kit-b2c306474b/icons/css/all.min.css';
   // Contact info
   const email = 'ian@wilsonsdesign.com';
   const phone = '+1 (530) 417-0586';
@@ -45,7 +45,7 @@
         class="text-text-light hover:text-accent transition-colors duration-200"
         aria-label="GitHub Profile"
       >
-        <Github />
+        <i class="fa-brands fa-github fa-xl"></i>
       </a>
       <a 
         href="https://artstation.com/iwilson" 
@@ -54,7 +54,7 @@
         class="text-text-light hover:text-accent transition-colors duration-200"
         aria-label="Dev.to Profile"
       >
-        <Palette />
+        <i class="fa-brands fa-artstation fa-xl"></i>
       </a>
       <a 
         href="https://linkedin.com/in/ijwilson" 
@@ -63,7 +63,7 @@
         class="text-text-light hover:text-accent transition-colors duration-200"
         aria-label="LinkedIn Profile"
       >
-        <Linkedin />
+        <i class="fa-brands fa-linkedin fa-xl"></i>
       </a>
     </div>
   </div>

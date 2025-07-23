@@ -2,7 +2,7 @@
   // Define props for the header component
   let { activePage = '' } = $props();
 
-  import { Github, Palette, Linkedin } from '@lucide/svelte';
+  import '@awesome.me/kit-b2c306474b/icons/css/all.min.css';
   
   // State for mobile menu toggle
   let isMenuOpen = $state(false);
@@ -59,11 +59,11 @@
             aria-label={link.name + " Profile"}
           >
             {#if link.icon === 'github'}
-              <Github />
+              <i class="fa-brands fa-github fa-xl"></i>
             {:else if link.icon === 'artstation'}
-              <Palette />
+              <i class="fa-brands fa-artstation fa-xl"></i>
             {:else if link.icon === 'linkedin'}
-              <Linkedin />
+              <i class="fa-brands fa-linkedin fa-xl"></i>
             {/if}
           </a>
         {/each}
@@ -127,3 +127,8 @@
     </div>
   {/if}
 </header>
+
+
+<style>
+
+</style>

@@ -2,7 +2,9 @@
   // Import any necessary components or data
   import { onMount } from 'svelte';
   import OptimizedImage from '$lib/components/OptimizedImage.svelte';
-  import { Briefcase, Code, FileText } from 'lucide-svelte';
+  //import { Briefcase, Code, FileText } from 'lucide-svelte';
+  import '@awesome.me/kit-b2c306474b/icons/css/all.min.css';
+
   
   
   // Profile image URL (placeholder for now)
@@ -112,11 +114,11 @@
           <!-- Card Icon -->
           <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 mx-auto md:mx-0">
             {#if card.icon === 'briefcase'}
-              <Briefcase class="w-8 h-8 text-primary"/>
+             <i class="fa-sharp fa-light fa-briefcase fa-2xl text-primary"></i>
             {:else if card.icon === 'code'}
-              <Code class="w-8 h-8 text-primary"/>
+              <i class="fa-sharp fa-light fa-code-simple fa-2xl text-primary"></i>
             {:else if card.icon === 'document'}
-              <FileText class="w-8 h-8 text-primary"/>
+              <i class="fa-sharp fa-light fa-bullseye-arrow fa-2xl text-primary"></i>
             {/if}
           </div>
           
