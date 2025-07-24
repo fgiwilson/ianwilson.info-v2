@@ -2,6 +2,8 @@
   import {marked} from 'marked';
   import { page } from '$app/stores';
   import { browser } from '$app/environment';
+
+  import '@awesome.me/kit-b2c306474b/icons/css/all.min.css';
   
   // Get the frontmatter metadata from the markdown file using Svelte 5 runes
   let { 
@@ -96,22 +98,17 @@
       <div class="flex space-x-4">
         <button 
           onclick={shareOnBlueSky}
-          class="text-text-light hover:text-accent transition-colors" 
+          class="text-text-light hover:text-accent transition-colors cursor-pointer" 
           aria-label="Share on BlueSky"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 2.104.139 3.25.139 5.24.902 6.386c.763 1.146 3.634 1.468 6.798-.473C10.954 4.766 12 2.652 12 10.8z"/>
-            <path d="M12 13.2c1.087 2.114 4.046 6.053 6.798 7.995 2.636 1.861 3.641 1.539 4.3.701.763-1.146.763-3.136 0-4.282-.763-1.146-3.634-1.468-6.798.473C13.046 19.234 12 21.348 12 13.2z"/>
-          </svg>
+          <i class="fa-brands fa-bluesky fa-xl"></i>
         </button>
         <button 
           onclick={shareOnLinkedIn}
-          class="text-text-light hover:text-accent transition-colors" 
+          class="text-text-light hover:text-accent transition-colors cursor-pointer" 
           aria-label="Share on LinkedIn"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-          </svg>
+          <i class="fa-brands fa-linkedin fa-xl"></i>
         </button>
       </div>
     </div>
