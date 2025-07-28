@@ -22,7 +22,7 @@ export interface SeoProps {
 
 // Default site metadata - update these values with your site info
 export const defaultMeta: SeoProps = {
-  title: 'Ian Wilson | Web Developer, Designer, Initiatives and more',
+  title: 'Ian Wilson | Strategic Operations Professional, Technology & Process Innovation, Data-Driven Solutions, Team Leadership',
   description: 'Professional portfolio and blog of Ian Wilson, Initiatives Manager, Strategic Operations, Brand Development and Design & Technical Consulting',
   image: '/images/site-preview.jpg', // Default social sharing image
 };
@@ -34,7 +34,7 @@ export const defaultMeta: SeoProps = {
  */
 export function generateSeoTags(meta: SeoProps = {}) {
   const seo = { ...defaultMeta, ...meta };
-  const defaultTitle = defaultMeta.title || 'Ian Wilson | Web Developer, Designer, Initiatives and more';
+  const defaultTitle = defaultMeta.title || 'Ian Wilson | Strategic Operations Professional, Technology & Process Innovation, Data-Driven Solutions, Team Leadership';
   const fullTitle = seo.title && seo.title !== defaultTitle 
     ? `${seo.title} | ${defaultTitle.split('|')[0].trim()}` 
     : seo.title || defaultTitle;
