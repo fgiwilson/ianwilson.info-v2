@@ -5,6 +5,40 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/db.js';
 
+/** 
+ * Load categories and media library for new project form
+ * @type {import('./$types').PageServerLoad} 
+ */
+export async function load({ locals }) {
+  // Check if user is authenticated
+  if (!locals.user) {
+    throw redirect(302, '/admin/login');
+  }
+  
+  try {
+    // Get all available categories
+    const categories = await prisma.category.findMany({
+      orderBy: { name: 'asc' }
+    });
+    
+    // Get media library for media uploader
+    const mediaLibrary = await prisma.media.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    return {
+      categories,
+      mediaLibrary
+    };
+  } catch (error) {
+    console.error('Error loading project form data:', error);
+    return {
+      categories: [],
+      mediaLibrary: []
+    };
+  }
+}
+
 /** @type {import('./$types').Actions} */
 export const actions = {
   /**

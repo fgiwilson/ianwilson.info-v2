@@ -3,6 +3,14 @@
   import { onMount } from 'svelte';
   import MediaUploader from '$lib/components/admin/MediaUploader.svelte';
   
+  // Get data from server load function
+  interface PageData {
+    categories: Category[];
+    mediaLibrary: any[];
+  }
+  
+  let { data }: { data: PageData } = $props();
+  
   // Define project state interface
   interface ProjectState {
     title: string;
@@ -31,13 +39,13 @@
   let showPreview = $state(false);
   const previewContent = $derived(project.content);
   
-  // Available categories (would normally come from the server)
+  // Available categories from server
   interface Category {
     id: string;
     name: string;
   }
   
-  const availableCategories = $state<Category[]>([]);
+  const availableCategories = $state<Category[]>(data.categories);
   
   // Error state
   const errors = $state({
@@ -60,20 +68,7 @@
     }
   }
   
-  // Mock data loading
-  onMount(() => {
-    // Simulate loading categories
-    setTimeout(() => {
-      availableCategories.push(
-        { id: '1', name: 'Web Development' },
-        { id: '2', name: 'UI/UX Design' },
-        { id: '3', name: 'Mobile App' },
-        { id: '4', name: 'E-Commerce' },
-        { id: '5', name: 'SaaS' },
-        { id: '6', name: 'Enterprise' }
-      );
-    }, 300);
-  });
+  // Categories are now loaded from the server via the load function
   
   // Toggle category selection
   function toggleCategory(categoryId: string) {
@@ -372,6 +367,7 @@ Describe the outcomes and results of the project."
             <MediaUploader 
               multiple={true} 
               accept="image/*"
+              existingMedia={data.mediaLibrary}
               on:uploadComplete={handleMediaUpload}
               on:removeMedia={handleMediaRemove}
             />
