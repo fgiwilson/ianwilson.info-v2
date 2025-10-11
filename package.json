@@ -8,7 +8,8 @@
 	},
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "prisma generate && vite build",
+		"postinstall": "prisma generate",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"seed": "node prisma/seed.js",
