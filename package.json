@@ -4,7 +4,7 @@
 	"version": "0.1.0",
 	"type": "module",
 	"engines": {
-		"node": ">23.x",
+		"node": ">=23.11.1",
 		"npm": ">=10.9.2"
 	},
 	"prisma": {
