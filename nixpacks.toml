@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_24_x", "npm-10_x", "openssl", "curl", "wget"]
+nixPkgs = ["nodejs_22_x", "npm-10_x", "openssl", "curl", "wget"]
 
 [start]
 cmd = "node build"
