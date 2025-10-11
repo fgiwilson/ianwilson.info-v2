@@ -12,7 +12,7 @@
 
 <!-- Calendly inline widget begin -->
 <div
-	class="calendly-inline-widget w-full"
+	class="calendly-inline-widget w-full pt-4"
 	data-url="https://calendly.com/ian-formativestudios/initial-consultation?primary_color=2d5a5c"
 	style="min-width:320px;height:700px;"
 ></div>

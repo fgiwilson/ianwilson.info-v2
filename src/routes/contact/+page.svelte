@@ -99,7 +99,7 @@
 			a consultation and let's get started!
 		</p>
 
-		<section class="">
+		<section>
 			<div>
 				<ul class="flex justify-center gap-4">
 					<li>
