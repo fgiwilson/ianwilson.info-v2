@@ -10,14 +10,19 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies with secret mount for NPM token
-# This is more secure than ARG as the secret is not stored in image layers
-RUN --mount=type=secret,id=npm_token \
-    if [ -f /run/secrets/npm_token ]; then \
-      echo "//npm.fontawesome.com/:_authToken=$(cat /run/secrets/npm_token)" > .npmrc; \
-    fi && \
-    npm ci && \
-    rm -f .npmrc
+# Accept NPM_TOKEN as build argument
+ARG NPM_TOKEN
+
+# Create .npmrc with authentication if token is provided
+RUN if [ -n "$NPM_TOKEN" ]; then \
+    echo "//npm.fontawesome.com/:_authToken=${NPM_TOKEN}" > .npmrc; \
+  fi
+
+# Install dependencies
+RUN npm ci
+
+# Remove .npmrc after installation for security
+RUN rm -f .npmrc
 
 # Copy source code
 COPY . .
