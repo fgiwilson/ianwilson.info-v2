@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["openssl", "curl", "wget"]
+nixPkgs = ["nodejs", "openssl", "curl", "wget"]
