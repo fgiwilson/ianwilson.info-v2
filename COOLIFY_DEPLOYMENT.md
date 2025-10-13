@@ -25,18 +25,26 @@ Look for: `//registry.npmjs.org/:_authToken=npm_xxxxxxxxxxxxx`
 
 ## Coolify Configuration
 
-### 1. Build Arguments (REQUIRED)
+### 1. NPM Token Secret (REQUIRED)
 
-In your Coolify application settings:
+The Dockerfile uses Docker BuildKit secrets for secure authentication. In Coolify:
 
-1. Go to your application → **Build** tab
-2. Find **Build Arguments** section
-3. Add the following build argument:
+**Option A: If Coolify supports BuildKit secrets (recommended)**
+1. Go to your application → **Secrets** tab
+2. Add a new secret:
+   - Name: `npm_token`
+   - Value: `npm_your_actual_token_here`
+
+**Option B: If Coolify doesn't support BuildKit secrets**
+If you get build errors related to secrets:
+1. Rename `Dockerfile.buildarg` to `Dockerfile` (backup the original first)
+2. In Coolify → **Build** tab → **Build Arguments**, add:
    ```
    NPM_TOKEN=npm_your_actual_token_here
    ```
+3. This method is less secure but compatible with all Docker versions
 
-**Important**: This must be set as a **Build Argument**, not a runtime environment variable, because npm needs it during the Docker build process.
+**Note**: The default Dockerfile uses `--mount=type=secret` which is more secure as the token is never stored in image layers. Use the build argument method only if necessary.
 
 ### 2. Runtime Environment Variables
 
@@ -111,12 +119,13 @@ npm run seed
 
 ### Build fails with E401 (Authentication Error)
 
-**Cause**: NPM_TOKEN is not set or incorrect
+**Cause**: NPM token secret is not set or incorrect
 
 **Solution**: 
-- Verify NPM_TOKEN is added as a **Build Argument** (not environment variable)
-- Ensure the token is valid and has access to `@awesome.me/kit-b2c306474b`
+- Verify the `npm_token` secret is configured in Coolify
+- Ensure the token is valid and has access to Font Awesome Pro packages
 - Check there are no extra spaces or quotes around the token
+- If Coolify doesn't support BuildKit secrets, you may need to use an alternative deployment method
 
 ### Application won't start
 
