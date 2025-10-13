@@ -10,8 +10,19 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
+# Accept NPM_TOKEN as build argument
+ARG NPM_TOKEN
+
+# Create .npmrc with authentication if token is provided
+RUN if [ -n "$NPM_TOKEN" ]; then \
+    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc; \
+  fi
+
 # Install dependencies
 RUN npm ci
+
+# Remove .npmrc after installation for security
+RUN rm -f .npmrc
 
 # Copy source code
 COPY . .
