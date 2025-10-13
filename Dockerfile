@@ -1,5 +1,5 @@
 # Build stage
-FROM node:23-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Install build dependencies for native modules (bcrypt, sharp, etc.)
 RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
@@ -23,7 +23,7 @@ RUN npm run build
 RUN npm prune --production
 
 # Production stage
-FROM node:23-alpine AS runner
+FROM node:24-alpine AS runner
 
 # Install runtime dependencies for native modules
 RUN apk add --no-cache cairo jpeg pango giflib
