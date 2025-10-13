@@ -15,7 +15,7 @@ ARG NPM_TOKEN
 
 # Create .npmrc with authentication if token is provided
 RUN if [ -n "$NPM_TOKEN" ]; then \
-    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc; \
+    echo "//npm.fontawesome.com/:_authToken=${NPM_TOKEN}" > .npmrc; \
   fi
 
 # Install dependencies
