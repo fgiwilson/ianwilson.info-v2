@@ -72,7 +72,7 @@
 		"crypto-js": "^4.2.0",
 		"marked": "^16.4.0",
 		"mdsvex": "^0.12.6",
-		"nodemailer": "^7.0.7",
+		"nodemailer": "^7.0.11",
 		"prisma": "^6.10.0",
 		"sharp": "^0.34.2",
 		"slugify": "^1.6.6"
